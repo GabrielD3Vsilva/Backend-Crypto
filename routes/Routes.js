@@ -4,8 +4,8 @@ const Db = require('../db/Db');
 
 routes.post('/register', async ( req, res ) => {
     const {name, email, password, confirmPassword} = req.body;
-
-    if(password !== confirmPassword) {
+    return res.status(200);
+   /* if(password !== confirmPassword) {
         return res.status(400);
     }
 
@@ -28,7 +28,7 @@ routes.post('/register', async ( req, res ) => {
         return res.status(200);
     } catch (err) {
         console.error(err);
-    }
+    }*/
 
 })
 
