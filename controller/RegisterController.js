@@ -12,12 +12,12 @@ const GetUserInfosToRegister = async (req, res) => {
     const userExist = await validateIfUserExists(email);
 
     if(!userExist) {
-        return res.status(400);
+        await createUser(name, password, email);
+
+        return res.send("ok");
     }
-
-    await createUser(name, password, email);
-
-    return res.send("ok");
+    return res.status(400);
+ 
 
 
 }
