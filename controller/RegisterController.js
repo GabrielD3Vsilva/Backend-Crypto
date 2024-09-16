@@ -11,7 +11,7 @@ const GetUserInfosToRegister = async (req, res) => {
     
     await createUser(name, password, email);
 
-    return res.send(ok);
+    return res.send("ok");
 
 
 }
