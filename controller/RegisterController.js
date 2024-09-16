@@ -8,7 +8,13 @@ const GetUserInfosToRegister = async (req, res) => {
     if(!passwordIsEqual) {
         return res.status(400);
     }
-    
+
+    const userExist = await validateIfUserExists(email);
+
+    if(!userExist) {
+        return res.status(400);
+    }
+
     await createUser(name, password, email);
 
     return res.send("ok");
@@ -16,11 +22,20 @@ const GetUserInfosToRegister = async (req, res) => {
 
 }
 
-const validateIfPasswordsIsEqual = (password, confirmPassword) => {
+const validateIfPasswordsIsEqual = ( password, confirmPassword ) => {
         if(password !== confirmPassword) {
             return false;
         }
         return true;
+}
+
+const validateIfUserExists = async ( email ) => {
+    await Db.User.find({email: email});
+
+    if(!user) {
+        return false;
+    }
+    return true;
 }
 
 
