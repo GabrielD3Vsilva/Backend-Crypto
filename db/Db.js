@@ -4,7 +4,7 @@ mongoose.connect("mongodb+srv://gbrieloliveira264:1981abcd.@cluster0.vej7o.mongo
 .then(( )=>console.log('mongoDb Connected'))
 .catch((error)=>console.log(error));
 
-const UserSchema = new mongoose.schema({
+const UserSchema = new mongoose.Schema({
     name: String,
     email: String,
     password: String,
