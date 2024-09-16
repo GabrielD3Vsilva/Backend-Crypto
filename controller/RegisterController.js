@@ -30,7 +30,7 @@ const validateIfPasswordsIsEqual = ( password, confirmPassword ) => {
 }
 
 const validateIfUserExists = async ( email ) => {
-    await Db.User.find({email: email});
+    const user = await Db.User.find({email: email});
 
     if(!user) {
         return false;
