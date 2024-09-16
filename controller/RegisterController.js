@@ -3,7 +3,7 @@ const Db = require('../db/Db');
 const GetUserInfosToRegister = async (req, res) => {
     const {name, password, confirmPassword, email} = req.body;
 
-    const passwordIsEqual = validateIfPasswordsIsEqual(password, confirmPassword);
+    /*const passwordIsEqual = validateIfPasswordsIsEqual(password, confirmPassword);
 
     if(!passwordIsEqual) {
         return res.status(400);
@@ -14,7 +14,7 @@ const GetUserInfosToRegister = async (req, res) => {
     
         await createUser(name, email, password);
 
-        return res.send("ok");
+        return res.send("ok");*/
     
     
  
