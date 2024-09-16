@@ -18,4 +18,6 @@ const GetUserInfosToLogin = async ( req, res ) => {
 
 
 
-module.exports = {GetUserInfosToLogin}
+module.exports = {
+    GetUserInfosToLogin
+}
