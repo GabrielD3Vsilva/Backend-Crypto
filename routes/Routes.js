@@ -1,16 +1,15 @@
-const routes = require('express').Router( );
+const routes = require('express').Router();
 const Db = require('../db/Db');
 
-
-routes.post('/register', async ( req, res ) => {
-    const {name, email, password} = req.body;
+routes.post('/register', async (req, res) => {
+    const { name, email, password } = req.body;
 
     const user = await Db.User.findOne({
         email: email
     });
 
-    if(!user) {
-        return res.status(400);
+    if (user) {
+        return res.status(400).send('User already exists');
     }
 
     try {
@@ -24,9 +23,8 @@ routes.post('/register', async ( req, res ) => {
         return res.send('ok');
     } catch (err) {
         console.error(err);
+        return res.status(500).send('Internal Server Error');
     }
-
-})
-
+});
 
 module.exports = routes;
