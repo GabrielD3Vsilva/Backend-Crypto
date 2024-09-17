@@ -1,4 +1,6 @@
-const DoRegisterInDb = async (req, res) => {
+const Db = require('../db/Db');
+
+const DoRegisterInDb = async ( req, res ) => {
     const { name, email, password } = req.body;
 
     const user = await Db.User.findOne({
