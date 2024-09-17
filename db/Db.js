@@ -8,6 +8,10 @@ const UserSchema = new mongoose.Schema({
     name: String,
     email: String,
     password: String,
+    cellPhone: Number,
+    cpf: Number,
+    rg: Number,
+    bornData: Number,
     isValidateDocuments: Boolean
 });
 
