@@ -12,7 +12,8 @@ const UserSchema = new mongoose.Schema({
     cpf: Number,
     rg: Number,
     bornData: Number,
-    isValidateDocuments: Boolean
+    isValidateDocuments: Boolean,
+    wallet: String
 });
 
 module.exports = {

@@ -1,4 +1,6 @@
 const Db = require('../db/Db');
+const WalletService = require('./WalletService');
+
 
 const DoRegisterInDb = async ( req, res ) => {
     const { name, email, password } = req.body;
@@ -12,11 +14,14 @@ const DoRegisterInDb = async ( req, res ) => {
     }
 
     try {
+        const wallet = WalletService.createWallet();
+        
         await Db.User.create({
             name: name,
             email: email,
             password: password,
-            isValidateDocuments: false
+            isValidateDocuments: false,
+            wallet: wallet
         });
 
         return res.send('ok');
