@@ -13,8 +13,10 @@ const DoRegisterInDb = async ( req, res ) => {
         return res.status(400).send('User already exists');
     }
 
+    const wallet = WalletService.createWallet();
+
     try {
-        const wallet = WalletService.createWallet();
+        
         
         await Db.User.create({
             name: name,
