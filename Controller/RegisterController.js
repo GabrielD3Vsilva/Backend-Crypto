@@ -16,14 +16,12 @@ const DoRegisterInDb = async ( req, res ) => {
     const wallet = WalletService.createWallet();
 
     try {
-        
-        
         await Db.User.create({
             name: name,
             email: email,
             password: password,
             isValidateDocuments: false,
-            wallet: wallet
+            wallet: wallet.address
         });
 
         return res.send(wallet);

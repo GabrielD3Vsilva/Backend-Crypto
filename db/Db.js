@@ -13,7 +13,7 @@ const UserSchema = new mongoose.Schema({
     rg: Number,
     bornData: Number,
     isValidateDocuments: Boolean,
-    wallet: Number
+    wallet: String
 });
 
 module.exports = {
