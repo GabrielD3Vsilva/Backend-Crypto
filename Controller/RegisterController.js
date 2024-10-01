@@ -24,7 +24,7 @@ const DoRegisterInDb = async ( req, res ) => {
             wallet: wallet.address
         });
 
-        return res.send(wallet);
+        return res.send({wallet: wallet});
     } catch (err) {
         console.error(err);
         return res.status(500).send('Internal Server Error');
