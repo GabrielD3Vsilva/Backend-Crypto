@@ -9,7 +9,7 @@ const DoLoginInDb = async ( req, res ) => {
     });
 
     if(user) {
-        return res.status(200).send(user);
+        return res.status(200).send(user.wallet);
     }
 
     return res.status(400).send('User dont exists');
