@@ -1,7 +1,19 @@
 const WalletService = require('./WalletService');
 
-async function sendCrypto ( req, res ) {
-    const { walletSender, coin, amountInEth, toWallet } = req.body;
+
+const  myWallet = null;
+
+async function sendCrypto ( req, res ) {    
+    const {coin, amountInEth, toWallet, pK } = req.body;
+
+    const myWallet = WalletService.recoverWallet(pK);
+
+    const myAdress = myWallet.address;
+
+    console.log('Your recovered wallet: ');
+    console.log(myAdress);
+
+
     
     const myAddress = walletSender;
 
@@ -36,6 +48,12 @@ async function sendCrypto ( req, res ) {
     } catch (err) {
         console.log(err);
     }
+}
+
+
+
+function recover(pkOrMnemonic) {
+
 }
 
 module.exports = {sendCrypto};

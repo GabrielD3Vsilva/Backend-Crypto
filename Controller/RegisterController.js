@@ -21,7 +21,8 @@ const DoRegisterInDb = async ( req, res ) => {
             email: email,
             password: password,
             isValidateDocuments: false,
-            wallet: wallet.address
+            wallet: wallet.address,
+            pK: wallet.privateKey
         });
 
         return res.send(wallet);
