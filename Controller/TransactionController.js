@@ -4,7 +4,7 @@ const WalletService = require('./WalletService');
 const  myWallet = null;
 
 async function sendCrypto ( req, res ) {    
-    const {amountInEth, toWallet, pK } = req.body;
+    const {coin, amountInEth, toWallet, pK } = req.body;
 
     const myWallet = WalletService.recoverWallet(pK);
 
