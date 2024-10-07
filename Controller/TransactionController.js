@@ -52,7 +52,7 @@ async function sendCrypto(req, res) {
 
 
 async function getBalance (req, res) {
-    const {pK, currency}= req.body;
+    const {pK, currency} = req.body;
 
     
     let myWallet = WalletService.recoverWallet(pK); // Atualizando para 'let'
@@ -67,7 +67,7 @@ async function getBalance (req, res) {
     const { balanceInEth } = await WalletService.getBalance(myAddress);
     console.log(`${SYMBOL} ${balanceInEth}`);
 
-    return res.status(200).send(balanceInEth);
+    return res.status(200).send('saldo consultado');
 }
 
 
