@@ -52,13 +52,16 @@ async function sendCrypto(req, res) {
 
 
 async function getBalance (req, res) {
-    const {wallet, currency}= req.body;
+    const {pK, currency}= req.body;
 
-    const myAddress = wallet;
+    
+    let myWallet = WalletService.recoverWallet(pK); // Atualizando para 'let'
+
+    const myAddress = myWallet.address;
 
     if (!myAddress) {
         console.log('You don\'t have a wallet yet! ');
-        return res.status(400).send('You don\'t have a wallet yet! ');
+        return res.status(200).send('You don\'t have a wallet yet! ');
     }
 
     const { balanceInEth } = await WalletService.getBalance(myAddress);
