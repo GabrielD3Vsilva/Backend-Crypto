@@ -9,5 +9,6 @@ routes.post('/register', RegisterController.DoRegisterInDb);
 routes.post('/login', LoginController.DoLoginInDb);
 routes.post('/validateDocuments', DocumentsController.GetDocumentsToValidate);
 routes.post('/sendCoin', TransactionController.sendCrypto);
+routes.post('/getBalance', TransactionController.getBalance);
 
 module.exports = routes;

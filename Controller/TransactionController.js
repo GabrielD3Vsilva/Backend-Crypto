@@ -50,4 +50,22 @@ async function sendCrypto(req, res) {
 }
 
 
-module.exports = {sendCrypto};
+
+async function getBalance (req, res) {
+    const {wallet, currency}= req.body;
+
+    const myAddress = wallet;
+
+    if (!myAddress) {
+        console.log('You don\'t have a wallet yet! ');
+        return res.status(400).send('You don\'t have a wallet yet! ');
+    }
+
+    const { balanceInEth } = await WalletService.getBalance(myAddress);
+    console.log(`${SYMBOL} ${balanceInEth}`);
+
+    return res.status(200).send(balanceInEth);
+}
+
+
+module.exports = {sendCrypto, getBalance};
