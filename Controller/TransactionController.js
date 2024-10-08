@@ -65,7 +65,7 @@ async function getBalance(req, res) {
     const { balanceInEth } = await WalletService.getBalance(myAddress);
     console.log(`${currency} ${balanceInEth}`);
 
-    return res.status(200).send(`Saldo consultado: ${balanceInEth} ${currency}`);
+    return res.status(200).send(balanceInEth);
 }
 
 
