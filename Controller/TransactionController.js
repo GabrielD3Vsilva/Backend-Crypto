@@ -54,7 +54,7 @@ async function sendCrypto(req, res) {
 async function getBalance(req, res) {
     const { pK, currency } = req.body;
 
-    const provider = validatePK(pK);
+    const provider = validatePK(currency);
 
     let myWallet = WalletService.recoverWallet(pK);
     const myAddress = myWallet.address;
