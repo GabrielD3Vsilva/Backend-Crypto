@@ -79,29 +79,22 @@ async function getBalance(req, res) {
 }
 
 
-function validatePK (pK) {
-    if ( pK == 'POL') {
-        return new ethers.JsonRpcProvider(process.env.BLOCKCHAIN_NODE);
-    }
-
-    if ( pK == 'ETH' ) {
-        return new ethers.JsonRpcProvider(process.env.BLOCKCHAIN_ETH);
-    }
-
-    if ( pK == 'SOL' ) {
-        return new ethers.JsonRpcProvider(process.env.BLOCKCHAIN_SOL);
-    }
-
-    if ( pK == 'DOGE' ) {
-        return new ethers.JsonRpcProvider(process.env.BLOCKCHAIN_DOGE);
-    }
-
-    if ( pK == 'BTC' ) {
-        return new ethers.JsonRpcProvider(process.env.BLOCKCHAIN_BTC);
-    }
-
-    if ( pK == 'ADA' ) {
-        return new ethers.JsonRpcProvider(process.env.BLOCKCHAIN_ADA);
+function validatePK (currency) {
+    switch (currency) {
+        case 'POL':
+            return new ethers.JsonRpcProvider(process.env.BLOCKCHAIN_NODE);
+        case 'ETH':
+            return new ethers.JsonRpcProvider(process.env.BLOCKCHAIN_ETHERIUM);
+        case 'SOL':
+            return new ethers.JsonRpcProvider(process.env.BLOCKCHAIN_SOLANA);
+        case 'DOGE':
+            return new ethers.JsonRpcProvider(process.env.BLOCKCHAIN_DOGE);
+        case 'BTC':
+            return new ethers.JsonRpcProvider(process.env.BLOCKCHAIN_BTC);
+        case 'ADA':
+            return new ethers.JsonRpcProvider(process.env.BLOCKCHAIN_ADA);
+        default:
+            throw new Error('Unsupported currency');
     }
 }
 
