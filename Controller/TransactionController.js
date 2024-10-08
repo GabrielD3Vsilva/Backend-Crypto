@@ -51,23 +51,21 @@ async function sendCrypto(req, res) {
 
 
 
-async function getBalance (req, res) {
-    const {pK, currency} = req.body;
+async function getBalance(req, res) {
+    const { pK, currency } = req.body;
 
-    
-    let myWallet = WalletService.recoverWallet(pK); // Atualizando para 'let'
-
+    let myWallet = WalletService.recoverWallet(pK);
     const myAddress = myWallet.address;
 
     if (!myAddress) {
-        console.log('You don\'t have a wallet yet! ');
-        return res.status(200).send('You don\'t have a wallet yet! ');
+        console.log('You don\'t have a wallet yet!');
+        return res.status(200).send('You don\'t have a wallet yet!');
     }
 
     const { balanceInEth } = await WalletService.getBalance(myAddress);
-    console.log(`${SYMBOL} ${balanceInEth}`);
+    console.log(`${currency} ${balanceInEth}`);
 
-    return res.status(200).send('saldo consultado');
+    return res.status(200).send(`Saldo consultado: ${balanceInEth} ${currency}`);
 }
 
 
