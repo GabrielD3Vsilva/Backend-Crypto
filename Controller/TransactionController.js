@@ -68,7 +68,7 @@ async function getBalance(req, res) {
     const balance = await provider.getBalance(myAddress);
     
     const balanceInEth = {
-        balaceInWei: balance,
+        balaceInWei: balance.toString(),
         balanceInEth: ethers.formatEther(balance)
     }
 
