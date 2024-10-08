@@ -54,6 +54,8 @@ async function sendCrypto(req, res) {
 async function getBalance(req, res) {
     const { pK, currency } = req.body;
 
+    const provider = validatePK(pK);
+
     let myWallet = WalletService.recoverWallet(pK);
     const myAddress = myWallet.address;
 
@@ -62,10 +64,44 @@ async function getBalance(req, res) {
         return res.status(200).send('You don\'t have a wallet yet!');
     }
 
-    const { balanceInEth } = await WalletService.getBalance(myAddress);
+    const balance = await provider.getBalance(myAddress);
+    
+    const balanceInEth = {
+        balaceInWei: balance,
+        balanceInEth: ethers.formatEther(balance)
+    }
+
+
     console.log(`${currency} ${balanceInEth}`);
 
     return res.status(200).send(balanceInEth);
+}
+
+
+function validatePK (pK) {
+    if ( pK == 'POL') {
+        return new ethers.JsonRpcProvider(process.env.BLOCKCHAIN_NODE);
+    }
+
+    if ( pK == 'ETH' ) {
+        return new ethers.JsonRpcProvider(process.env.BLOCKCHAIN_ETH);
+    }
+
+    if ( pK == 'SOL' ) {
+        return new ethers.JsonRpcProvider(process.env.BLOCKCHAIN_SOL);
+    }
+
+    if ( pK == 'DOGE' ) {
+        return new ethers.JsonRpcProvider(process.env.BLOCKCHAIN_DOGE);
+    }
+
+    if ( pK == 'BTC' ) {
+        return new ethers.JsonRpcProvider(process.env.BLOCKCHAIN_BTC);
+    }
+
+    if ( pK == 'ADA' ) {
+        return new ethers.JsonRpcProvider(process.env.BLOCKCHAIN_ADA);
+    }
 }
 
 
