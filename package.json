@@ -10,6 +10,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@solana/web3.js": "^1.95.3",
     "axios": "^1.7.7",
     "backend-crypto": "file:",
     "cors": "^2.8.5",

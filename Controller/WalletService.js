@@ -1,6 +1,11 @@
-const {ethers} = require("ethers");
+const { ethers } = require("ethers");
 
-const provider = new ethers.JsonRpcProvider(process.env.BLOCKCHAIN_NODE);
+const provider = new ethers.JsonRpcProvider({
+    url: process.env.BLOCKCHAIN_NODE,
+    headers: {
+        'project_id': process.env.PROJECT_ID
+    }
+});
 
 let myWallet = null;
 
@@ -9,7 +14,7 @@ function createWallet() {
     return myWallet;
 }
 
-function recoverWallet(pkOrMnemonic){
+function recoverWallet(pkOrMnemonic) {
     myWallet = pkOrMnemonic.indexOf(" ") !== -1
         ? ethers.Wallet.fromPhrase(pkOrMnemonic, provider)
         : new ethers.Wallet(pkOrMnemonic, provider);
@@ -17,20 +22,19 @@ function recoverWallet(pkOrMnemonic){
     return myWallet;
 }
 
-async function getBalance(address){
+async function getBalance(address) {
     const balance = await provider.getBalance(address);
     return {
-        balaceInWei: balance,
+        balanceInWei: balance,
         balanceInEth: ethers.formatEther(balance)
     }
-
 }
 
-function addressIsValid(address){
+function addressIsValid(address) {
     return ethers.isAddress(address);
 }
 
-async function buildTransaction(toWallet, amountInEth){
+async function buildTransaction(toWallet, amountInEth) {
     const amount = ethers.parseEther(amountInEth);
 
     const tx = {
@@ -41,10 +45,9 @@ async function buildTransaction(toWallet, amountInEth){
     const feeData = await provider.getFeeData();
     const txFee = 21000n * feeData.gasPrice;
 
-
     const balance = await provider.getBalance(myWallet.address);
 
-    if(balance < (amount + txFee)) {
+    if (balance < (amount + txFee)) {
         return false;
     }
     return tx;

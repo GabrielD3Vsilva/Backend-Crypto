@@ -1,5 +1,6 @@
 const Db = require('../db/Db');
 const WalletService = require('./WalletService');
+const SolanaService = require('./SolanaService');
 
 
 const DoRegisterInDb = async ( req, res ) => {
@@ -14,6 +15,9 @@ const DoRegisterInDb = async ( req, res ) => {
     }
 
     const wallet = WalletService.createWallet();
+    const walletSolana = SolanaService.createWallet();
+
+    
 
     try {
         await Db.User.create({
