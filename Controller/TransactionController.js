@@ -54,21 +54,18 @@ async function sendCrypto(req, res) {
 
 
 async function getBalance(req, res) {
-    const { pK, currency, pKSolana } = req.body;
+    const { pK, currency, walletSolana } = req.body;
 
     const provider = validatePK(currency);
 
     if (currency === 'SOL') {
-        const pKUint = new Uint8Array(pKSolana);
-        const pKString = Array.from(pKUint).join(','); // Converte o array em string sem espaços
-        let myWallet = SolanaService.recoverWallet(pKString);
-
-        const myAddress = myWallet.address;
+        const myAddress = walletSolana;
 
         if (!myAddress) {
             console.log('You don\'t have a wallet yet!');
             return res.status(200).send('You don\'t have a wallet yet!');
         }
+
         const { balanceInSOL } = await WalletService.getBalance(myAddress);
         return res.status(200).send(balanceInSOL);
     }
