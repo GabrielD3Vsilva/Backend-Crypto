@@ -97,16 +97,9 @@ function validatePK (currency) {
     switch (currency) {
         case 'POL':
             return new ethers.JsonRpcProvider(process.env.BLOCKCHAIN_NODE);
-        case 'ETH':
-            return new ethers.JsonRpcProvider(process.env.BLOCKCHAIN_ETHERIUM);
+        
         case 'SOL':
             return 'SOL';
-        case 'DOGE':
-            return new ethers.JsonRpcProvider(process.env.BLOCKCHAIN_DOGE);
-        case 'BTC':
-            return new ethers.JsonRpcProvider(process.env.BLOCKCHAIN_BTC);
-        case 'ADA':
-            return new ethers.JsonRpcProvider(process.env.BLOCKCHAIN_ADA);
         default:
             throw new Error('Unsupported currency');
     }
