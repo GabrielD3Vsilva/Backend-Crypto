@@ -62,7 +62,7 @@ async function getBalance(req, res) {
 
         
             const pKUint = new Uint8Array(pKSolana);
-            if (pKUint.length !== 64) {
+            if (pKSolana.length !== 64) {
                 return res.status(400).send('Invalid secret key length for Solana');
             }
             let myWallet = SolanaService.recoverWallet(pKUint);
