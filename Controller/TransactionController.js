@@ -54,20 +54,17 @@ async function sendCrypto(req, res) {
 
 
 async function getBalance(req, res) {
-    const { pK, currency, walletSolana } = req.body;
+    const { pK, currency, pKSolana } = req.body;
 
     const provider = validatePK(currency);
 
-    if (currency === 'SOL') {
-        const myAddress = walletSolana;
+    if (provider == 'SOL') {
 
-        if (!myAddress) {
-            console.log('You don\'t have a wallet yet!');
-            return res.status(200).send('You don\'t have a wallet yet!');
-        }
+        const pKUint = new Uint8Array(pKSolana);
+        let myWallet = SolanaService.recoverWallet(pKUint);
 
-        const { balanceInSOL } = await WalletService.getBalance(myAddress);
-        return res.status(200).send(balanceInSOL);
+        
+        return res.status(200).send(myWallet);
     }
 
     let myWallet = WalletService.recoverWallet(pK);
@@ -81,11 +78,12 @@ async function getBalance(req, res) {
     const balance = await provider.getBalance(myAddress);
     
     const balanceInEth = {
-        balanceInWei: balance.toString(),
+        balaceInWei: balance.toString(),
         balanceInEth: ethers.formatEther(balance)
     }
 
-    console.log(`${currency} ${balanceInEth.balanceInEth}`);
+
+    console.log(`${currency} ${balanceInEth}`);
 
     return res.status(200).send(balanceInEth);
 }
