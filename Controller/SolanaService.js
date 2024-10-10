@@ -12,22 +12,27 @@ function createWallet() {
     };
 }
 
-const solanaWeb3 = require('@solana/web3.js');
+
 
 async function recoverWallet(pkOrMnemonic) {
-    // Verifica se é uma chave secreta (sem espaços)
-    if (typeof pkOrMnemonic === 'string' && pkOrMnemonic.indexOf(" ") === -1) {
-        const secretKeyArray = Uint8Array.from(pkOrMnemonic.split(',').map(Number));
-        const myWallet = solanaWeb3.Keypair.fromSecretKey(secretKeyArray);
-        return {
-            wallet: myWallet,
-            address: myWallet.publicKey.toString(),
-            privateKey: Array.from(myWallet.secretKey)
-        };
+    // Verifica se é um Uint8Array ou uma string
+    let secretKeyArray;
+    if (pkOrMnemonic instanceof Uint8Array) {
+        secretKeyArray = pkOrMnemonic;
+    } else if (typeof pkOrMnemonic === 'string' && pkOrMnemonic.indexOf(" ") === -1) {
+        secretKeyArray = Uint8Array.from(pkOrMnemonic.split(',').map(Number));
     } else {
         throw new Error("Solana não suporta nativamente a recuperação por mnemônico");
     }
+
+    const myWallet = solanaWeb3.Keypair.fromSecretKey(secretKeyArray);
+    return {
+        wallet: myWallet,
+        address: myWallet.publicKey.toString(),
+        privateKey: Array.from(myWallet.secretKey)
+    };
 }
+
 
 
 async function getBalance(address) {
