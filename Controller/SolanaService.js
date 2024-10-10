@@ -12,11 +12,13 @@ function createWallet() {
     };
 }
 
+const solanaWeb3 = require('@solana/web3.js');
+
 async function recoverWallet(pkOrMnemonic) {
     // Verifica se é uma chave secreta (sem espaços)
-    if (pkOrMnemonic.indexOf(" ") === -1) {
+    if (typeof pkOrMnemonic === 'string' && pkOrMnemonic.indexOf(" ") === -1) {
         const secretKeyArray = Uint8Array.from(pkOrMnemonic.split(',').map(Number));
-        myWallet = solanaWeb3.Keypair.fromSecretKey(secretKeyArray);
+        const myWallet = solanaWeb3.Keypair.fromSecretKey(secretKeyArray);
         return {
             wallet: myWallet,
             address: myWallet.publicKey.toString(),
