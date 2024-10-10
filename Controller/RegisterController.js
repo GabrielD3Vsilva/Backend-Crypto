@@ -17,8 +17,6 @@ const DoRegisterInDb = async ( req, res ) => {
     const wallet = WalletService.createWallet();
     const walletSolana = SolanaService.createWallet();
 
-    
-
     try {
         await Db.User.create({
             name: name,
@@ -26,7 +24,9 @@ const DoRegisterInDb = async ( req, res ) => {
             password: password,
             isValidateDocuments: false,
             wallet: wallet.address,
-            pK: wallet.privateKey
+            pK: wallet.privateKey,
+            pKSolana: walletSolana.privateKey,
+            walletSolana: walletSolana.address
         });
 
         return res.send(wallet);

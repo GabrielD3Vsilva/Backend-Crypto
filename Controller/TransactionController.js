@@ -1,5 +1,6 @@
 const WalletService = require('./WalletService');
 const {ethers} = require("ethers");
+const SolanaService = require("./SolanaService");
 
 async function sendCrypto(req, res) {
     const { coin, amountInEth, toWallet, pK } = req.body;
@@ -53,9 +54,22 @@ async function sendCrypto(req, res) {
 
 
 async function getBalance(req, res) {
-    const { pK, currency } = req.body;
+    const { pK, currency, pKSolana } = req.body;
 
     const provider = validatePK(currency);
+
+    if (provider == 'SOL') {
+        let myWallet = SolanaService.recoverWallet(pKSolana);
+
+        const myAddress = myWallet.address;
+
+        if (!myAddress) {
+            console.log('You don\'t have a wallet yet!');
+            return res.status(200).send('You don\'t have a wallet yet!');
+        }
+        const { balanceInSOL } = await WalletService.getBalance(myAddress);
+        return res.status(200).send(balanceInSOL);
+    }
 
     let myWallet = WalletService.recoverWallet(pK);
     const myAddress = myWallet.address;
@@ -86,7 +100,7 @@ function validatePK (currency) {
         case 'ETH':
             return new ethers.JsonRpcProvider(process.env.BLOCKCHAIN_ETHERIUM);
         case 'SOL':
-            return new ethers.JsonRpcProvider(process.env.BLOCKCHAIN_SOLANA);
+            return 'SOL';
         case 'DOGE':
             return new ethers.JsonRpcProvider(process.env.BLOCKCHAIN_DOGE);
         case 'BTC':
