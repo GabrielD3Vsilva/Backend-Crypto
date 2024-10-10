@@ -58,10 +58,10 @@ async function getBalance(req, res) {
 
     const provider = validatePK(currency);
 
-    if (provider == 'SOL') {
-
+    if (currency === 'SOL') {
         const pKUint = new Uint8Array(pKSolana);
-        let myWallet = SolanaService.recoverWallet(pKUint);
+        const pKString = Array.from(pKUint).join(','); // Converte o array em string sem espaços
+        let myWallet = SolanaService.recoverWallet(pKString);
 
         const myAddress = myWallet.address;
 
@@ -84,12 +84,11 @@ async function getBalance(req, res) {
     const balance = await provider.getBalance(myAddress);
     
     const balanceInEth = {
-        balaceInWei: balance.toString(),
+        balanceInWei: balance.toString(),
         balanceInEth: ethers.formatEther(balance)
     }
 
-
-    console.log(`${currency} ${balanceInEth}`);
+    console.log(`${currency} ${balanceInEth.balanceInEth}`);
 
     return res.status(200).send(balanceInEth);
 }
