@@ -60,11 +60,21 @@ async function getBalance(req, res) {
 
     if (provider == 'SOL') {
 
-        const pKUint = new Uint8Array(pKSolana);
-        let myWallet = SolanaService.recoverWallet(pKUint);
-
         
-        return res.status(200).send(myWallet);
+            const pKUint = new Uint8Array(pKSolana);
+            if (pKUint.length !== 64) {
+                return res.status(400).send('Invalid secret key length for Solana');
+            }
+            let myWallet = SolanaService.recoverWallet(pKUint);
+    
+            const myAddress = myWallet.address;
+    
+            if (!myAddress) {
+                console.log('You don\'t have a wallet yet!');
+                return res.status(200).send('You don\'t have a wallet yet!');
+            }
+    
+            return res.status(200).send(myAddress);
     }
 
     let myWallet = WalletService.recoverWallet(pK);
