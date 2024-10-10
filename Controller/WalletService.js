@@ -1,11 +1,6 @@
 const { ethers } = require("ethers");
 
-const provider = new ethers.JsonRpcProvider({
-    url: process.env.BLOCKCHAIN_NODE,
-    headers: {
-        'project_id': process.env.PROJECT_ID
-    }
-});
+const provider = new ethers.JsonRpcProvider(process.env.BLOCKCHAIN_NODE);
 
 let myWallet = null;
 
