@@ -59,7 +59,9 @@ async function getBalance(req, res) {
     const provider = validatePK(currency);
 
     if (provider == 'SOL') {
-        let myWallet = SolanaService.recoverWallet(pKSolana);
+
+        const pKUint = new Uint8Array(pKSolana);
+        let myWallet = SolanaService.recoverWallet(pKUint);
 
         const myAddress = myWallet.address;
 
