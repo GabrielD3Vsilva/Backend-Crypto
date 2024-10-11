@@ -1,6 +1,7 @@
 const WalletService = require('./WalletService');
 const {ethers} = require("ethers");
 const SolanaService = require("./SolanaService");
+const solanaWeb3 = require('@solana/web3.js');
 
 async function sendCrypto(req, res) {
     const { coin, amountInEth, toWallet, pK } = req.body;
@@ -66,8 +67,6 @@ async function getBalance(req, res) {
             return res.status(400).send('Invalid secret key length for Solana');
         }
 
-
-
         try {
             const walletDetails = await SolanaService.recoverWallet(pKArray);
             
@@ -76,10 +75,14 @@ async function getBalance(req, res) {
                 return res.status(400).send('You don\'t have a wallet yet! ');
             }
         
-            const { balanceInSOL } = await SolanaService.getBalance(walletDetails.address);
+            const balance = await SolanaService.getBalance(walletDetails.address);
             
+            const balanceInSOL = {
+                balanceInLamports: balance,
+                balanceInSOL: balance / solanaWeb3.LAMPORTS_PER_SOL
+            }
         
-            return res.status(200).send('ok');
+            return res.status(200).send(balanceInSOL);
 
         } catch (err) {
             console.error('Failed to recover wallet:', err.message);
