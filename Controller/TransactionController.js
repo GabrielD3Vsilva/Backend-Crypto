@@ -71,22 +71,9 @@ async function getBalance(req, res) {
         try {
             const walletDetails = await SolanaService.recoverWallet(pKArray);
             
-            const myAdress = walletDetails.address;
-
-
-            if (!myAdress) {
-                console.log('You don\'t have a wallet yet! ');
-                return preMenu();
-            }
+            
         
-            const { balanceInSOL } = await SolanaService.getBalance(myAdress);
-            console.log(`${SYMBOL} ${balanceInSOL}`);
-            
-            const Object = {
-                balanceInSOL
-            } 
-            
-            return res.status(200).send(Object);
+            return res.status(200).send(walletDetails);
 
         } catch (err) {
             console.error('Failed to recover wallet:', err.message);
