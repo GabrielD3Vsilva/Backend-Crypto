@@ -64,24 +64,13 @@ async function getBalance(req, res) {
             return res.status(400).send('Invalid secret key length for Solana');
         }
 
-        let myWallet;
-        try {
-            myWallet = SolanaService.recoverWallet(pKUint);
-        } catch (error) {
-            return res.status(400).send('Error recovering Solana wallet: ' + error.message);
-        }
-
-        const myAddress = myWallet.address;
-
-        if (!myAddress) {
-            console.log('You don\'t have a wallet yet!');
-            return res.status(200).send('You don\'t have a wallet yet!');
-        }
-
-        return res.status(200).send(myAddress);
+        
+        return res.status(200).send(pKUint);
     }
 
     let myWallet = WalletService.recoverWallet(pK);
+
+    
     const myAddress = myWallet.address;
 
     if (!myAddress) {
