@@ -77,7 +77,7 @@ async function getBalance(req, res) {
             }
         
             const { balanceInSOL } = await SolanaService.getBalance(walletDetails.address);
-            console.log(`${SYMBOL} ${balanceInSOL}`);
+            console.log( balanceInSOL );
         
             return res.status(200).send(balanceInSOL);
 
