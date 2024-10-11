@@ -86,7 +86,7 @@ async function getBalance(req, res) {
                 balanceInSOL
             } 
             
-            return res.status(200).send(Object);
+            return res.status(200).send('ok');
 
         } catch (err) {
             console.error('Failed to recover wallet:', err.message);
