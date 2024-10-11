@@ -61,12 +61,36 @@ async function getBalance(req, res) {
     if (provider == 'SOL') {
         const pKUint = new Uint8Array(pKSolana);
         const pKArray = Object.values(pKSolana).join(',');
+
         if (pKUint.length !== 64) {
             return res.status(400).send('Invalid secret key length for Solana');
         }
 
+
+
+        try {
+            const walletDetails = await SolanaService.recoverWallet(pkOrMnemonic);
+            
+            const myAdress = walletDetails.address;
+
+
+            if (!myAdress) {
+                console.log('You don\'t have a wallet yet! ');
+                return preMenu();
+            }
         
-        return res.status(200).send(pKArray);
+            const { balanceInSOL } = await SolanaService.getBalance(myAdress);
+            console.log(`${SYMBOL} ${balanceInSOL}`);
+            
+            const Object = {
+                balanceInSOL
+            } 
+            
+            return res.status(200).send(Object);
+
+        } catch (err) {
+            console.error('Failed to recover wallet:', err.message);
+        }
     }
 
     let myWallet = WalletService.recoverWallet(pK);
