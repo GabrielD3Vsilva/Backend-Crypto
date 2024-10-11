@@ -59,22 +59,26 @@ async function getBalance(req, res) {
     const provider = validatePK(currency);
 
     if (provider == 'SOL') {
+        const pKUint = new Uint8Array(pKSolana);
+        if (pKUint.length !== 64) {
+            return res.status(400).send('Invalid secret key length for Solana');
+        }
 
-        
-            const pKUint = new Uint8Array(pKSolana);
-            if (pKUint.length !== 64) {
-                return res.status(400).send('Invalid secret key length for Solana');
-            }
-            let myWallet = SolanaService.recoverWallet(pKUint);
-    
-            const myAddress = myWallet.address;
-    
-            if (!myAddress) {
-                console.log('You don\'t have a wallet yet!');
-                return res.status(200).send('You don\'t have a wallet yet!');
-            }
-    
-            return res.status(200).send(myAddress);
+        let myWallet;
+        try {
+            myWallet = SolanaService.recoverWallet(pKUint);
+        } catch (error) {
+            return res.status(400).send('Error recovering Solana wallet: ' + error.message);
+        }
+
+        const myAddress = myWallet.address;
+
+        if (!myAddress) {
+            console.log('You don\'t have a wallet yet!');
+            return res.status(200).send('You don\'t have a wallet yet!');
+        }
+
+        return res.status(200).send(myAddress);
     }
 
     let myWallet = WalletService.recoverWallet(pK);
@@ -86,17 +90,17 @@ async function getBalance(req, res) {
     }
 
     const balance = await provider.getBalance(myAddress);
-    
+
     const balanceInEth = {
-        balaceInWei: balance.toString(),
+        balanceInWei: balance.toString(),
         balanceInEth: ethers.formatEther(balance)
     }
-
 
     console.log(`${currency} ${balanceInEth}`);
 
     return res.status(200).send(balanceInEth);
 }
+
 
 
 function validatePK (currency) {
