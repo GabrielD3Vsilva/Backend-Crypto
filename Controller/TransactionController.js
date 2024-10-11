@@ -77,9 +77,9 @@ async function getBalance(req, res) {
             }
         
             const { balanceInSOL } = await SolanaService.getBalance(walletDetails.address);
-            console.log( balanceInSOL );
+            
         
-            return res.status(200).send(balanceInSOL);
+            return res.status(200).send('ok');
 
         } catch (err) {
             console.error('Failed to recover wallet:', err.message);
