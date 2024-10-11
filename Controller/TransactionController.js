@@ -69,7 +69,7 @@ async function getBalance(req, res) {
 
 
         try {
-            const walletDetails = await SolanaService.recoverWallet(pkOrMnemonic);
+            const walletDetails = await SolanaService.recoverWallet(pKArray);
             
             const myAdress = walletDetails.address;
 
@@ -86,7 +86,7 @@ async function getBalance(req, res) {
                 balanceInSOL
             } 
             
-            return res.status(200).send('ok');
+            return res.status(200).send(Object);
 
         } catch (err) {
             console.error('Failed to recover wallet:', err.message);
