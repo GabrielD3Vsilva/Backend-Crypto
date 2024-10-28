@@ -2,7 +2,7 @@ const axios = require('axios');
 
 async function findCryptoShops ( req, res ) {
     const { lat, lon } = req.body;
-    const radius = 100;
+    const radius = 1000000;
 
     try {
         const response = await axios.get('https://coinmap.org/api/v1/venues/');
