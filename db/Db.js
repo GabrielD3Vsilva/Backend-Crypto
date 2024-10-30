@@ -21,7 +21,7 @@ const UserSchema = new mongoose.Schema({
     pKDoge: String,
     walletEth: String,
     pKEth: String,
-    walletBitcoin, String,
+    walletBitcoin: String,
     pKBitcoin: String
 });
 
