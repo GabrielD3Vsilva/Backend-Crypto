@@ -16,7 +16,11 @@ const UserSchema = new mongoose.Schema({
     wallet: String,
     pK: String,
     walletSolana: String,
-    pKSolana: Array
+    pKSolana: Array,
+    walletDoge: String,
+    pKDoge: String,
+    walletEth: String,
+    pKEth: String
 });
 
 module.exports = {

@@ -12,8 +12,6 @@ function createWallet() {
     };
 }
 
-
-
 async function recoverWallet(pkOrMnemonic) {
     // Verifica se é um Uint8Array ou uma string
     let secretKeyArray;
