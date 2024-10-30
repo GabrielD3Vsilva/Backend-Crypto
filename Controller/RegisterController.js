@@ -2,7 +2,7 @@ const Db = require('../db/Db');
 const WalletService = require('./WalletService');
 const SolanaService = require('./SolanaService');
 const DogeService = require('./DogeService');
-const EthService = requuire('./EthService');
+const EthService = require('./EthService');
 const BitcoinService = require('./BitcoinService');
 
 const DoRegisterInDb = async ( req, res ) => {
