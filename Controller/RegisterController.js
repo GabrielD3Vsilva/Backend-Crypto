@@ -3,6 +3,7 @@ const WalletService = require('./WalletService');
 const SolanaService = require('./SolanaService');
 const DogeService = require('./DogeService');
 const EthService = requuire('./EthService');
+const BitcoinService = require('./BitcoinService');
 
 const DoRegisterInDb = async ( req, res ) => {
     const { name, email, password } = req.body;
@@ -19,7 +20,7 @@ const DoRegisterInDb = async ( req, res ) => {
     const walletSolana = SolanaService.createWallet();
     const walletDogeService = DogeService.createWallet();
     const walletEthService = EthService.createWallet();
-
+    const walletBitcoinService = BitcoinService.createWallet();
 
     try {
         await Db.User.create({
@@ -34,7 +35,9 @@ const DoRegisterInDb = async ( req, res ) => {
             walletDoge: walletDogeService.address,
             pKDoge: walletDogeService.privateKey,
             walletEth: walletEthService.address,
-            pKEth: walletEthService.privateKey
+            pKEth: walletEthService.privateKey,
+            walletBitcoin: walletBitcoinService.privateKey,
+            pKBitcoin: walletBitcoinService.address
         });
 
         return res.send(wallet);

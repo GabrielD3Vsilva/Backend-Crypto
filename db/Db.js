@@ -20,7 +20,9 @@ const UserSchema = new mongoose.Schema({
     walletDoge: String,
     pKDoge: String,
     walletEth: String,
-    pKEth: String
+    pKEth: String,
+    walletBitcoin, String,
+    pKBitcoin: String
 });
 
 module.exports = {
