@@ -14,7 +14,7 @@
     "@solana/web3.js": "^1.95.3",
     "axios": "^1.7.7",
     "backend-crypto": "file:",
-    "bitcoinjs-lib": "^7.0.0-rc.0",
+    "bitcoinjs-lib": "^5.2.0",
     "bitcore-lib-doge": "^10.5.3",
     "cors": "^2.8.5",
     "cpf-cnpj-validator": "^1.0.3",
