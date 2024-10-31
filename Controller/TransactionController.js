@@ -2,6 +2,7 @@ const WalletService = require('./WalletService');
 const {ethers} = require("ethers");
 const SolanaService = require("./SolanaService");
 const solanaWeb3 = require('@solana/web3.js');
+const BitcoinService = require('./BitcoinService');
 
 async function sendCrypto(req, res) {
     const { coin, amountInEth, toWallet, pK } = req.body;
@@ -55,7 +56,7 @@ async function sendCrypto(req, res) {
 
 
 async function getBalance(req, res) {
-    const { pK, currency, pKSolana } = req.body;
+    const { pK, currency, pKSolana, pKEth, pKBitcoin, pKDoge } = req.body;
 
     const provider = validatePK(currency);
 
@@ -89,6 +90,14 @@ async function getBalance(req, res) {
         }
     }
 
+
+    if(provider == 'BTC') {
+        const walletDetails = BitcoinService.recoverWallet(pKBitcoin);
+        const myAddress = walletDetails.address;
+        const balance = await BitcoinService.getBalance(myAddress);
+        return res.send(balance);
+    }
+
     let myWallet = WalletService.recoverWallet(pK);
 
     
@@ -117,9 +126,14 @@ function validatePK (currency) {
     switch (currency) {
         case 'POL':
             return new ethers.JsonRpcProvider(process.env.BLOCKCHAIN_NODE);
-        
         case 'SOL':
             return 'SOL';
+        case 'ETH':
+            return 'ETH';
+        case 'DOGE':
+            return 'DOGE';
+        case 'BTC':
+            return 'BTC';
         default:
             throw new Error('Unsupported currency');
     }
