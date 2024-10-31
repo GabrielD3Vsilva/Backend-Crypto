@@ -95,7 +95,7 @@ async function getBalance(req, res) {
         const walletDetails = BitcoinService.recoverWallet(pKBitcoin);
         const myAddress = walletDetails.address;
         const balance = await BitcoinService.getBalance(myAddress);
-        return res.send(balance.balanceInBTC);
+        return res.send(balance);
     }
 
     let myWallet = WalletService.recoverWallet(pK);
