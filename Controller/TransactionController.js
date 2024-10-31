@@ -3,6 +3,7 @@ const {ethers} = require("ethers");
 const SolanaService = require("./SolanaService");
 const solanaWeb3 = require('@solana/web3.js');
 const BitcoinService = require('./BitcoinService');
+const DogeService = require('./DogeService');
 
 async function sendCrypto(req, res) {
     const { coin, amountInEth, toWallet, pK } = req.body;
@@ -95,6 +96,16 @@ async function getBalance(req, res) {
         const walletDetails = BitcoinService.recoverWallet(pKBitcoin);
         const myAddress = walletDetails.address;
         const balance = await BitcoinService.getBalance(myAddress);
+        return res.send(balance);
+    }
+
+
+    if(provider == 'DOGE') {
+        const walletDetails = DogeService.recoverWallet(pKDoge);
+        const myAddress = walletDetails.privateKey;
+
+        const balance = await DogeService.getBalance(myAddress);
+
         return res.send(balance);
     }
 
