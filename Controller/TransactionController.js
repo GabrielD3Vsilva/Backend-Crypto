@@ -4,6 +4,7 @@ const SolanaService = require("./SolanaService");
 const solanaWeb3 = require('@solana/web3.js');
 const BitcoinService = require('./BitcoinService');
 const DogeService = require('./DogeService');
+const EthService = require('./EthService');
 
 async function sendCrypto(req, res) {
     const { coin, amountInEth, toWallet, pK } = req.body;
@@ -60,6 +61,16 @@ async function getBalance(req, res) {
     const { pK, currency, pKSolana, pKEth, pKBitcoin, pKDoge } = req.body;
 
     const provider = validatePK(currency);
+
+    if(provider == 'ETH') {
+        const walletDetails = await EthService.recoverWallet(pKEth);
+        const myAddress = walletDetails.address;
+
+
+        const balance = await EthService.getBalance(myAddress);
+
+        res.send(balance);
+    }
 
     if (provider == 'SOL') {
         const pKUint = new Uint8Array(pKSolana);
