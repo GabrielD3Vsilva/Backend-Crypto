@@ -1,20 +1,24 @@
-const { ethers } = require("ethers");
-const provider = new ethers.JsonRpcProvider('https://eth-mainnet.alchemyapi.io/v2/aIBlgH6Ux2NDOmtuz-vQ4nGg-ELApfVf');
+const { ethers } = require('ethers');
+
+// Conexão à rede Ethereum
+const provider = new ethers.providers.JsonRpcProvider('https://eth-mainnet.g.alchemy.com/v2/aIBlgH6Ux2NDOmtuz-vQ4nGg-ELApfVf');
 
 let myWallet = null;
 
 function createWallet() {
-    myWallet = ethers.Wallet.createRandom().connect(provider);
+    const wallet = ethers.Wallet.createRandom();
     return {
-        wallet: myWallet.address,
-        privateKey: myWallet.privateKey
+        wallet: wallet,
+        address: wallet.address,
+        privateKey: wallet.privateKey
     };
 }
 
 function recoverWallet(pkOrMnemonic) {
-    myWallet = pkOrMnemonic.indexOf(" ") !== -1 ?
-        ethers.Wallet.fromMnemonic(pkOrMnemonic).connect(provider) :
-        new ethers.Wallet(pkOrMnemonic).connect(provider);
+    myWallet = pkOrMnemonic.indexOf(" ") !== -1
+        ? ethers.Wallet.fromMnemonic(pkOrMnemonic)
+        : new ethers.Wallet(pkOrMnemonic, provider);
+
     return myWallet;
 }
 
@@ -22,39 +26,46 @@ async function getBalance(address) {
     const balance = await provider.getBalance(address);
     return {
         balanceInWei: balance,
-        balanceInEth: ethers.utils.formatEther(balance)
+        balanceInEth: ethers.utils.formatEther(balance) // Uso correto de ethers.utils.formatEther
     };
 }
 
 function addressIsValid(address) {
-    return ethers.utils.isAddress(address);
+    return ethers.utils.isAddress(address); // Uso correto de ethers.utils.isAddress
 }
 
 async function buildTransaction(toWallet, amountInEth) {
-    const amount = ethers.utils.parseEther(amountInEth);
+    if (!addressIsValid(toWallet)) {
+        throw new Error("Endereço inválido.");
+    }
+
+    if (isNaN(parseFloat(amountInEth))) {
+        throw new Error("Valor inválido para amountInEth. Deve ser uma string numérica.");
+    }
+    
+    const amount = ethers.utils.parseEther(amountInEth); // Uso correto de ethers.utils.parseEther
+    const amountBigInt = BigInt(amount.toString()); // Convertendo para BigInt
+
     const tx = {
         to: toWallet,
-        value: amount
+        value: amountBigInt
     };
 
     const feeData = await provider.getFeeData();
-    const txFee = ethers.BigNumber.from(21000).mul(feeData.gasPrice);
+    const txFee = 21000n * BigInt(feeData.gasPrice.toString()); // Convertendo para BigInt
 
     const balance = await provider.getBalance(myWallet.address);
-    if (balance.lt(amount.add(txFee))) {
-        return false;
-    }
+    const balanceBigInt = BigInt(balance.toString()); // Convertendo para BigInt
 
+    if (balanceBigInt < (amountBigInt + txFee)) {
+        throw new Error("Saldo insuficiente.");
+    }
     return tx;
 }
 
-function sendTransaction(tx) {
-    return myWallet.sendTransaction(tx);
-}
-
-// Adiciona função para obter a chave privada
-function getPrivateKey() {
-    return myWallet.privateKey;
+async function sendTransaction(tx) {
+    const response = await myWallet.sendTransaction(tx);
+    return response.hash;
 }
 
 module.exports = {
@@ -63,6 +74,5 @@ module.exports = {
     getBalance,
     addressIsValid,
     buildTransaction,
-    sendTransaction,
-    getPrivateKey // Exporta a função
+    sendTransaction
 };

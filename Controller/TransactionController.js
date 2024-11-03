@@ -103,9 +103,7 @@ async function getBalance(req, res) {
     if(provider == 'DOGE') {
         const walletDetails = DogeService.recoverWallet(pKDoge);
         const myAddress = walletDetails.privateKey;
-
         const balance = await DogeService.getBalance(myAddress);
-
         return res.send(balance);
     }
 

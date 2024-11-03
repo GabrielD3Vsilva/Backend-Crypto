@@ -1,17 +1,18 @@
-const { ethers } = require("ethers");
+const { ethers } = require('ethers');
 
-const provider = new ethers.JsonRpcProvider(process.env.BLOCKCHAIN_NODE);
+// Conexão à rede Ethereum
+const provider = new ethers.providers.JsonRpcProvider('https://polygon-rpc.com');
 
 let myWallet = null;
 
 function createWallet() {
     myWallet = ethers.Wallet.createRandom(provider);
-    return myWallet;
+    return myWallet.privateKey;
 }
 
 function recoverWallet(pkOrMnemonic) {
     myWallet = pkOrMnemonic.indexOf(" ") !== -1
-        ? ethers.Wallet.fromPhrase(pkOrMnemonic, provider)
+        ? ethers.Wallet.fromMnemonic(pkOrMnemonic, provider) // Mudando de fromPhrase para fromMnemonic
         : new ethers.Wallet(pkOrMnemonic, provider);
 
     return myWallet;
@@ -21,16 +22,16 @@ async function getBalance(address) {
     const balance = await provider.getBalance(address);
     return {
         balanceInWei: balance,
-        balanceInEth: ethers.formatEther(balance)
-    }
+        balanceInEth: ethers.utils.formatEther(balance) // Uso correto de ethers.utils.formatEther
+    };
 }
 
 function addressIsValid(address) {
-    return ethers.isAddress(address);
+    return ethers.utils.isAddress(address); // Uso correto de ethers.utils.isAddress
 }
 
 async function buildTransaction(toWallet, amountInEth) {
-    const amount = ethers.parseEther(amountInEth);
+    const amount = ethers.utils.parseEther(amountInEth); // Uso correto de ethers.utils.parseEther
 
     const tx = {
         to: toWallet,
@@ -38,18 +39,20 @@ async function buildTransaction(toWallet, amountInEth) {
     };
 
     const feeData = await provider.getFeeData();
-    const txFee = 21000n * feeData.gasPrice;
+    const txFee = 21000n * BigInt(feeData.gasPrice.toString()); // Garantindo BigInt
 
     const balance = await provider.getBalance(myWallet.address);
+    const balanceBigInt = BigInt(balance.toString()); // Convertendo para BigInt
 
-    if (balance < (amount + txFee)) {
+    if (balanceBigInt < (amount + txFee)) {
         return false;
     }
     return tx;
 }
 
-function sendTransaction(tx) {
-    return myWallet.sendTransaction(tx);
+async function sendTransaction(tx) {
+    const response = await myWallet.sendTransaction(tx);
+    return response.hash;
 }
 
 module.exports = {
@@ -59,4 +62,4 @@ module.exports = {
     addressIsValid,
     buildTransaction,
     sendTransaction
-}
+};
