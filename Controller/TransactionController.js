@@ -134,7 +134,7 @@ async function getBalance(req, res) {
 function validatePK (currency) {
     switch (currency) {
         case 'POL':
-            return new ethers.JsonRpcProvider(process.env.BLOCKCHAIN_NODE);
+            return new ethers.providers.JsonRpcProvider('https://polygon-rpc.com');
         case 'SOL':
             return 'SOL';
         case 'ETH':
