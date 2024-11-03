@@ -121,7 +121,7 @@ async function getBalance(req, res) {
 
     const balanceInEth = {
         balanceInWei: balance.toString(),
-        balanceInEth: ethers.formatEther(balance)
+        balanceInEth: ethers.utils.formatEther(balance)
     }
 
     console.log(`${currency} ${balanceInEth}`);
