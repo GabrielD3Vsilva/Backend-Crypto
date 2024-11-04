@@ -70,7 +70,7 @@ async function getBalance(req, res) {
         const balanceWei = await provider.getBalance(myAddress);
         const balanceEth = ethers.utils.formatEther(balanceWei); // Converte Wei para ETH
     
-        res.send({ balanceInEth: balanceEth }); // Retorna o saldo em ETH
+        return res.send({ balanceInEth: balanceEth }); // Retorna o saldo em ETH
     }
     
 
