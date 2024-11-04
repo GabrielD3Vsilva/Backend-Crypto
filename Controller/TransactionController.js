@@ -62,16 +62,17 @@ async function getBalance(req, res) {
 
     let provider = validatePK(currency);
 
-    if(provider == 'ETH') {
+    if (provider == 'ETH') {
         provider = new ethers.providers.JsonRpcProvider('https://eth-mainnet.g.alchemy.com/v2/aIBlgH6Ux2NDOmtuz-vQ4nGg-ELApfVf');
         const walletDetails = await EthService.recoverWallet(pKEth);
         const myAddress = walletDetails.address;
-
-
-        const balance = await provider.getBalance(myAddress);
-
-        res.send(balance);
+    
+        const balanceWei = await provider.getBalance(myAddress);
+        const balanceEth = ethers.utils.formatEther(balanceWei); // Converte Wei para ETH
+    
+        res.send({ balanceInEth: balanceEth }); // Retorna o saldo em ETH
     }
+    
 
     if (provider == 'SOL') {
         const pKUint = new Uint8Array(pKSolana);
