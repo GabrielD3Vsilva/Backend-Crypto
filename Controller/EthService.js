@@ -58,7 +58,7 @@ async function buildTransaction(toWallet, amountInEth) {
     const balanceBigInt = BigInt(balance.toString()); // Convertendo para BigInt
 
     if (balanceBigInt < (amountBigInt + txFee)) {
-        throw new Error("Saldo insuficiente.");
+        return false;
     }
     return tx;
 }

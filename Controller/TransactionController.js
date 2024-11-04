@@ -24,12 +24,10 @@ async function sendCrypto(req, res) {
             return res.status(400);
         }
 
-
         if (!EthService.addressIsValid(toWallet)) {
             console.log('Invalid Wallet');
             return res.status(400);
         }
-
 
         try {
             const tx = await EthService.buildTransaction(toWallet, amountInEth);
