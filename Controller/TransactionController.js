@@ -16,7 +16,7 @@ async function sendCrypto(req, res) {
     if(provider == 'ETH'){
         provider = new ethers.providers.JsonRpcProvider('https://eth-mainnet.g.alchemy.com/v2/aIBlgH6Ux2NDOmtuz-vQ4nGg-ELApfVf');
 
-        const walletDetails = await EthService.recoverWallet(pKEth);
+        const walletDetails = await EthService.recoverWallet(pK);
         const myAddress = walletDetails.address;
 
         if (!myAddress) {
