@@ -60,7 +60,18 @@ async function sendCrypto(req, res) {
 async function getBalance(req, res) {
     const { pK, currency, pKSolana, pKEth, pKBitcoin, pKDoge } = req.body;
 
-    const provider = validatePK(currency);
+    let provider = validatePK(currency);
+
+    if(provider == 'ETH') {
+        provider = new ethers.providers.JsonRpcProvider('https://eth-mainnet.g.alchemy.com/v2/aIBlgH6Ux2NDOmtuz-vQ4nGg-ELApfVf');
+        const walletDetails = await EthService.recoverWallet(pKEth);
+        const myAddress = walletDetails.address;
+
+
+        const balance = await provider.getBalance(myAddress);
+
+        res.send(balance);
+    }
 
     if (provider == 'SOL') {
         const pKUint = new Uint8Array(pKSolana);
@@ -74,8 +85,8 @@ async function getBalance(req, res) {
             const walletDetails = await SolanaService.recoverWallet(pKArray);
             
             if (!walletDetails.address) {
-                console.log('You don\'t have a wallet yet!');
-                return res.status(400).send('You don\'t have a wallet yet!');
+                console.log('You don\'t have a wallet yet! ');
+                return res.status(400).send('You don\'t have a wallet yet! ');
             }
         
             const balance = await SolanaService.getBalance(walletDetails.address);
@@ -90,39 +101,45 @@ async function getBalance(req, res) {
         } catch (err) {
             console.error('Failed to recover wallet:', err.message);
         }
-    } else if (provider == 'BTC') {
+    }
+
+
+    if(provider == 'BTC') {
         const walletDetails = BitcoinService.recoverWallet(pKBitcoin);
         const myAddress = walletDetails.address;
         const balance = await BitcoinService.getBalance(myAddress);
         return res.send(balance);
-    } else if (provider == 'DOGE') {
+    }
+
+
+    if(provider == 'DOGE') {
         const walletDetails = DogeService.recoverWallet(pKDoge);
         const myAddress = walletDetails.privateKey;
         const balance = await DogeService.getBalance(myAddress);
         return res.send(balance);
-    } else {
-        let myWallet = WalletService.recoverWallet(pK);
-
-        const myAddress = myWallet.address;
-
-        if (!myAddress) {
-            console.log('You don\'t have a wallet yet!');
-            return res.status(200).send('You don\'t have a wallet yet!');
-        }
-
-        const balance = await provider.getBalance(myAddress);
-
-        const balanceInEth = {
-            balanceInWei: balance.toString(),
-            balanceInEth: ethers.utils.formatEther(balance) // Corrigido aqui!
-        }
-
-        console.log(`${currency} ${balanceInEth}`);
-
-        return res.status(200).send(balanceInEth);
     }
-}
 
+    let myWallet = WalletService.recoverWallet(pK);
+
+    
+    const myAddress = myWallet.address;
+
+    if (!myAddress) {
+        console.log('You don\'t have a wallet yet!');
+        return res.status(200).send('You don\'t have a wallet yet!');
+    }
+
+    const balance = await provider.getBalance(myAddress);
+
+    const balanceInEth = {
+        balanceInWei: balance.toString(),
+        balanceInEth: ethers.utils.formatEther(balance)
+    }
+
+    console.log(`${currency} ${balanceInEth}`);
+
+    return res.status(200).send(balanceInEth);
+}
 
 
 
