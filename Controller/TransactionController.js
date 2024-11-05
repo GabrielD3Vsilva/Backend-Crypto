@@ -86,11 +86,6 @@ async function sendCrypto(req, res) {
             return res.status(400);
         }
 
-        if (!BitcoinService.addressIsValid(toWallet)) {
-            console.log('Invalid Wallet');
-            return res.status(400);
-        }
-
         try {
             const tx = await BitcoinService.buildTransaction(toWallet, amountInEth);
 
