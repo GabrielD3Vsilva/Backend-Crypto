@@ -20,8 +20,8 @@ function recoverWallet(privateKeyWIF) {
 // Função para verificar o saldo de um endereço
 async function getBalance(address) {
     try {
-        const response = await axios.get(`https://dogechain.info/api/v1/address/balance/${address}`);
-        return { balanceInDoge: response.data.balance };
+        const response = await axios.get(`https://api.blockcypher.com/v1/doge/main/addrs/${address}/balance`);
+        return { balanceInDoge: response.data.balance / 1e8 }; // O saldo na BlockCypher é retornado em satoshis
     } catch (error) {
         console.error("Erro ao consultar o saldo:", error.message);
         return { balanceInDoge: 0, message: "Não foi possível consultar o saldo. Por favor, envie alguns fundos para o endereço primeiro." };
@@ -41,22 +41,43 @@ function addressIsValid(address) {
 // Função para construir uma transação
 async function buildTransaction(myWallet, toWallet, amountInDoge) {
     const privateKey = bitcore.PrivateKey.fromWIF(myWallet.privateKey);
-    const utxos = await axios.get(`https://dogechain.info/api/v1/address/unspent/${myWallet.address}`);
-    
-    const transaction = new bitcore.Transaction()
-        .from(utxos.data.unspent_outputs)
-        .to(toWallet, amountInDoge * 1e8)
-        .change(myWallet.address)
-        .sign(privateKey);
-    
-    return transaction.serialize();
+    try {
+        const response = await axios.get(`https://api.blockcypher.com/v1/doge/main/addrs/${myWallet.address}?unspentOnly=true`);
+        
+        // Verificar se a propriedade txrefs existe na resposta
+        if (!response.data.txrefs) {
+            throw new Error("No unspent outputs found for the address.");
+        }
+        
+        const utxos = response.data.txrefs.map(output => ({
+            txId: output.tx_hash,
+            outputIndex: output.tx_output_n,
+            address: myWallet.address,
+            script: bitcore.Script.buildPublicKeyHashOut(myWallet.address).toString(),
+            satoshis: output.value
+        }));
+        
+        const transaction = new bitcore.Transaction()
+            .from(utxos)
+            .to(toWallet, amountInDoge * 1e8)
+            .change(myWallet.address)
+            .sign(privateKey);
+        
+        return transaction.serialize();
+    } catch (error) {
+        console.error("Erro ao construir a transação:", error.message);
+        return null;
+    }
 }
+
+
+
 
 // Função para enviar uma transação
 async function sendTransaction(transactionHex) {
     try {
-        const response = await axios.post('https://dogechain.info/api/v1/pushtx', { tx: transactionHex });
-        return response.data.txid;
+        const response = await axios.post('https://api.blockcypher.com/v1/doge/main/txs/push', { tx: transactionHex });
+        return response.data.tx.hash;
     } catch (error) {
         console.error("Erro ao enviar a transação:", error.message);
         return null;

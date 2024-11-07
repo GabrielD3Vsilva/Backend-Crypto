@@ -1,5 +1,5 @@
 const WalletService = require('./WalletService');
-const {ethers} = require("ethers");
+const { ethers } = require("ethers");
 const SolanaService = require("./SolanaService");
 const solanaWeb3 = require('@solana/web3.js');
 const BitcoinService = require('./BitcoinService');
