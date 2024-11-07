@@ -1,115 +1,87 @@
 const bitcoin = require('bitcoinjs-lib');
-const bip39 = require('bip39');
 const axios = require('axios');
-const network = bitcoin.networks.bitcoin; // você pode mudar a rede se necessário
 
-let myWallet = null;
-
+// Função para criar uma nova carteira
 function createWallet() {
-  const mnemonic = bip39.generateMnemonic();
-  const seed = bip39.mnemonicToSeedSync(mnemonic);
-  const root = bitcoin.bip32.fromSeed(seed, network);
-
-  myWallet = root.derivePath("m/44'/0'/0'/0/0");
-  return {
-    address: bitcoin.payments.p2pkh({ pubkey: myWallet.publicKey, network }).address,
-    publicKey: myWallet.publicKey.toString('hex'),
-    privateKey: myWallet.toWIF(),
-    mnemonic: mnemonic
-  };
+    const keyPair = bitcoin.ECPair.makeRandom();
+    const { address } = bitcoin.payments.p2pkh({ pubkey: keyPair.publicKey });
+    const privateKey = keyPair.toWIF();
+    console.log("Carteira criada:");
+    console.log({ address, privateKey });
+    return { address, privateKey };
 }
 
-function recoverWallet(mnemonic) {
-  const seed = bip39.mnemonicToSeedSync(mnemonic);
-  const root = bitcoin.bip32.fromSeed(seed, network);
-
-  myWallet = root.derivePath("m/44'/0'/0'/0/0");
-  return {
-    address: bitcoin.payments.p2pkh({ pubkey: myWallet.publicKey, network }).address,
-    publicKey: myWallet.publicKey.toString('hex'),
-    privateKey: myWallet.toWIF()
-  };
+// Função para recuperar uma carteira a partir de uma chave privada
+function recoverWallet(privateKeyWIF) {
+    const keyPair = bitcoin.ECPair.fromWIF(privateKeyWIF);
+    const { address } = bitcoin.payments.p2pkh({ pubkey: keyPair.publicKey });
+    return { address, privateKey: privateKeyWIF };
 }
 
+// Função para verificar o saldo de um endereço
 async function getBalance(address) {
-  try {
-    const response = await axios.get(`https://blockchain.info/q/addressbalance/${address}`);
-    const balanceInSatoshi = response.data;
-    return {
-      balanceInSatoshi,
-      balanceInBTC: balanceInSatoshi / 1e8
-    };
-  } catch (err) {
-    console.error(err);
-    throw new Error('Erro ao obter saldo');
-  }
-}
-
-async function buildTransaction(toAddress, amountInBTC) {
-  try {
-    const psbt = new bitcoin.Psbt({ network });
-
-    const fee = 10000; // Defina uma taxa fixa ou calcule uma taxa dinâmica
-    const utxosResponse = await axios.get(`https://blockchain.info/unspent?active=${myWallet.publicKey.toString('hex')}`);
-    const utxos = utxosResponse.data.unspent_outputs;
-
-    let inputValue = 0;
-    utxos.forEach(utxo => {
-      inputValue += utxo.value;
-      psbt.addInput({
-        hash: utxo.tx_hash_big_endian,
-        index: utxo.tx_output_n,
-        nonWitnessUtxo: Buffer.from(utxo.script, 'hex')
-      });
-    });
-
-    const amountInSatoshi = amountInBTC * 1e8;
-    psbt.addOutput({
-      address: toAddress,
-      value: amountInSatoshi
-    });
-
-    // Troco (valor total de entrada - valor de saída - taxa)
-    if (inputValue > amountInSatoshi + fee) {
-      psbt.addOutput({
-        address: myWallet.publicKey.toString('hex'), // Endereço de troco
-        value: inputValue - amountInSatoshi - fee
-      });
+    try {
+        const response = await axios.get(`https://blockchain.info/q/addressbalance/${address}`);
+        return { balanceInBTC: response.data / 1e8 }; // O saldo é retornado em satoshis
+    } catch (error) {
+        console.error("Erro ao consultar o saldo:", error.message);
+        return { balanceInBTC: 0, message: "Não foi possível consultar o saldo. Por favor, envie alguns fundos para o endereço primeiro." };
     }
-
-    return psbt;
-  } catch (err) {
-    console.error(err);
-    throw new Error('Erro ao construir a transação');
-  }
 }
 
-function signTransaction(psbt) {
-  try {
-    psbt.signAllInputs(myWallet);
-    psbt.finalizeAllInputs();
-    return psbt.extractTransaction().toHex();
-  } catch (err) {
-    console.error(err);
-    throw new Error('Erro ao assinar a transação');
-  }
+// Função para validar um endereço
+function addressIsValid(address) {
+    try {
+        bitcoin.address.toOutputScript(address);
+        return true;
+    } catch (error) {
+        return false;
+    }
 }
 
-async function sendTransaction(signedTxHex) {
-  try {
-    const response = await axios.post('https://blockchain.info/pushtx', `tx=${signedTxHex}`);
-    return response.data;
-  } catch (err) {
-    console.error(err);
-    throw new Error('Erro ao enviar a transação');
-  }
+// Função para construir uma transação
+async function buildTransaction(myWallet, toAddress, amountInBTC) {
+    const keyPair = bitcoin.ECPair.fromWIF(myWallet.privateKey);
+    try {
+        const response = await axios.get(`https://blockchain.info/unspent?active=${myWallet.address}`);
+        const utxos = response.data.unspent_outputs.map(output => ({
+            txId: output.tx_hash,
+            vout: output.tx_output_n,
+            value: output.value
+        }));
+
+        const psbt = new bitcoin.Psbt();
+        utxos.forEach(utxo => psbt.addInput({ hash: utxo.txId, index: utxo.vout }));
+        psbt.addOutput({ address: toAddress, value: amountInBTC * 1e8 });
+        psbt.addOutput({ address: myWallet.address, value: utxos.reduce((sum, utxo) => sum + utxo.value, 0) - amountInBTC * 1e8 - 10000 }); // Subtraindo uma taxa de 10,000 satoshis
+
+        utxos.forEach((utxo, i) => psbt.signInput(i, keyPair));
+        psbt.validateSignaturesOfAllInputs();
+        psbt.finalizeAllInputs();
+
+        return psbt.extractTransaction().toHex();
+    } catch (error) {
+        console.error("Erro ao construir a transação:", error.message);
+        return null;
+    }
+}
+
+// Função para enviar uma transação
+async function sendTransaction(transactionHex) {
+    try {
+        const response = await axios.post('https://blockchain.info/pushtx', `tx=${transactionHex}`);
+        return response.data;
+    } catch (error) {
+        console.error("Erro ao enviar a transação:", error.message);
+        return null;
+    }
 }
 
 module.exports = {
-  createWallet,
-  recoverWallet,
-  getBalance,
-  buildTransaction,
-  signTransaction,
-  sendTransaction
+    createWallet,
+    recoverWallet,
+    getBalance,
+    addressIsValid,
+    buildTransaction,
+    sendTransaction
 };

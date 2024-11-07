@@ -70,9 +70,6 @@ async function buildTransaction(myWallet, toWallet, amountInDoge) {
     }
 }
 
-
-
-
 // Função para enviar uma transação
 async function sendTransaction(transactionHex) {
     try {
