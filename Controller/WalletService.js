@@ -7,7 +7,7 @@ let myWallet = null;
 
 function createWallet() {
     myWallet = ethers.Wallet.createRandom(provider);
-    return myWallet.privateKey;
+    return myWallet;
 }
 
 function recoverWallet(pkOrMnemonic) {
