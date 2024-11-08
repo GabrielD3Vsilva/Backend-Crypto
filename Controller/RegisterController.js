@@ -37,7 +37,7 @@ const DoRegisterInDb = async ( req, res ) => {
             walletEth: walletEthService.address,
             pKEth: walletEthService.privateKey,
             walletBitcoin: walletBitcoinService.privateKey,
-            pKBitcoin: walletBitcoinService.address
+            pKBitcoin: walletBitcoinService.privateKey
         });
 
         return res.send(wallet);
