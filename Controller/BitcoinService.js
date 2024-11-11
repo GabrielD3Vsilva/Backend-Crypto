@@ -20,56 +20,39 @@ function recoverWallet(privateKeyWIF) {
 
 // Função para verificar o saldo de um endereço
 async function getBalance(address) {
-    try {
-        const response = await axios.get(`https://blockchain.info/q/addressbalance/${address}`);
-        return { balanceInBTC: response.data / 1e8 }; // O saldo é retornado em satoshis
-    } catch (error) {
-        console.error("Erro ao consultar o saldo:", error.message);
-        return { balanceInBTC: 0, message: "Não foi possível consultar o saldo. Por favor, envie alguns fundos para o endereço primeiro." };
-    }
+    const response = await axios.get(`https://blockchain.info/q/addressbalance/${address}`);
+    return { balanceInBTC: response.data / 1e8 }; // O saldo é retornado em satoshis
 }
 
 // Função para validar um endereço
 function addressIsValid(address) {
-    try {
-        bitcoin.address.toOutputScript(address);
-        return true;
-    } catch (error) {
-        return false;
-    }
+    bitcoin.address.toOutputScript(address);
+    return true;
 }
 
 // Função para construir uma transação
 async function buildTransaction(myWallet, toAddress, amountInBTC) {
     const keyPair = bitcoin.ECPair.fromWIF(myWallet.privateKey);
-    try {
-        const response = await axios.get(`https://blockchain.info/unspent?active=${myWallet.address}`);
-        const utxos = response.data.unspent_outputs.map(output => ({ txId: output.tx_hash, vout: output.tx_output_n, value: output.value }));
-        const psbt = new bitcoin.Psbt();
-        utxos.forEach(utxo => psbt.addInput({ hash: utxo.txId, index: utxo.vout }));
-        psbt.addOutput({ address: toAddress, value: amountInBTC * 1e8 });
-        psbt.addOutput({ address: myWallet.address, value: utxos.reduce((sum, utxo) => sum + utxo.value, 0) - amountInBTC * 1e8 - 10000 }); // Subtraindo uma taxa de 10,000 satoshis
-        utxos.forEach((utxo, i) => psbt.signInput(i, keyPair));
-        psbt.validateSignaturesOfAllInputs();
-        psbt.finalizeAllInputs();
-        return psbt.extractTransaction().toHex();
-    } catch (error) {
-        
-        return null; // Retorne null em caso de erro
-    }
+    const response = await axios.get(`https://blockchain.info/unspent?active=${myWallet.address}`); const utxos = response.data.unspent_outputs.map(output => ({ txId: output.tx_hash, vout: output.tx_output_n, value: output.value })); const totalValue = utxos.reduce((sum, utxo) => sum + utxo.value, 0); const amountInSatoshis = amountInBTC * 1e8; const fee = 10000; 
+    if (amountInSatoshis + fee > totalValue) 
+        { console.error("Saldo insuficiente para a transação."); return null; } const psbt = new bitcoin.Psbt(); utxos.forEach(utxo => psbt.addInput({ hash: utxo.txId, index: utxo.vout })); psbt.addOutput({ address: toAddress, value: amountInSatoshis }); psbt.addOutput({ address: myWallet.address, value: totalValue - amountInSatoshis - fee }); 
+    
+    utxos.forEach((utxo, i) => psbt.signInput(i, keyPair)); psbt.validateSignaturesOfAllInputs(); psbt.finalizeAllInputs(); 
+    
+    return psbt.extractTransaction().toHex();
 }
 
 // Função para enviar uma transação
 async function sendTransaction(transactionHex) {
-    try {
-        const response = await axios.post('https://blockchain.info/pushtx', `tx=${transactionHex}`);
-        return response.data;
-    } catch (error) {
-        console.error("Erro ao enviar a transação:", error.message);
-        return null; // Retorne null em caso de erro
-    }
+    const response = await axios.post('https://blockchain.info/pushtx', `tx=${transactionHex}`);
+    return response.data;
 }
 
-module.exports = { createWallet, recoverWallet, getBalance, addressIsValid, buildTransaction, sendTransaction };
-
-
+module.exports = {
+    createWallet,
+    recoverWallet,
+    getBalance,
+    addressIsValid,
+    buildTransaction,
+    sendTransaction
+};
