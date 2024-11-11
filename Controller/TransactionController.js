@@ -6,6 +6,8 @@ const BitcoinService = require('./BitcoinService');
 const DogeService = require('./DogeService');
 const EthService = require('./EthService');
 
+
+//Realização de transação em diferentes carteiras
 async function sendCrypto(req, res) {
     const { currency, amountInEth, toWallet, pK } = req.body;
 
@@ -46,7 +48,7 @@ async function sendCrypto(req, res) {
     }
 
 
-    if ( currency == 'POL' ) {
+    /*if ( currency == 'POL' ) {
         const walletDetails = await WalletService.recoverWallet(pK);
         const myAddress = walletDetails.address;
 
@@ -74,7 +76,7 @@ async function sendCrypto(req, res) {
         } catch (err) {
             console.log(err);
         }
-    }
+    }*/
 
 
     if ( currency == 'BTC' ) {
@@ -86,20 +88,18 @@ async function sendCrypto(req, res) {
             return res.status(400);
         }
 
-        try {
-            const tx = await BitcoinService.buildTransaction(toWallet, amountInEth);
+        
+        const tx = await BitcoinService.buildTransaction(toWallet, amountInEth);
 
-            if (!tx) {
+        if (!tx) {
                 console.log('Insufficient balance');
                 return res.send('Insufficient balance');
-            }
-            
-            const txReceipt = await BitcoinService.sendTransaction(tx);
-
-            return res.send('Transaction successful!', txReceipt);
-        } catch (err) {
-            console.log(err);
         }
+            
+        const txReceipt = await BitcoinService.sendTransaction(tx);
+
+        return res.send('Transaction successful!', txReceipt);
+        
     }
 
  
@@ -171,6 +171,12 @@ async function sendCrypto(req, res) {
 
 
 
+
+
+
+
+
+//Verificação e retorno de saldo em diferentes carteiras 
 async function getBalance(req, res) {
     const { pK, currency, pKSolana, pKEth, pKBitcoin, pKDoge } = req.body;
 

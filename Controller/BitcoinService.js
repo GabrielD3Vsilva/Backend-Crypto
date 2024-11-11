@@ -44,25 +44,18 @@ async function buildTransaction(myWallet, toAddress, amountInBTC) {
     const keyPair = bitcoin.ECPair.fromWIF(myWallet.privateKey);
     try {
         const response = await axios.get(`https://blockchain.info/unspent?active=${myWallet.address}`);
-        const utxos = response.data.unspent_outputs.map(output => ({
-            txId: output.tx_hash,
-            vout: output.tx_output_n,
-            value: output.value
-        }));
-
+        const utxos = response.data.unspent_outputs.map(output => ({ txId: output.tx_hash, vout: output.tx_output_n, value: output.value }));
         const psbt = new bitcoin.Psbt();
         utxos.forEach(utxo => psbt.addInput({ hash: utxo.txId, index: utxo.vout }));
         psbt.addOutput({ address: toAddress, value: amountInBTC * 1e8 });
         psbt.addOutput({ address: myWallet.address, value: utxos.reduce((sum, utxo) => sum + utxo.value, 0) - amountInBTC * 1e8 - 10000 }); // Subtraindo uma taxa de 10,000 satoshis
-
         utxos.forEach((utxo, i) => psbt.signInput(i, keyPair));
         psbt.validateSignaturesOfAllInputs();
         psbt.finalizeAllInputs();
-
         return psbt.extractTransaction().toHex();
     } catch (error) {
-        console.error("Erro ao construir a transação:", error.message);
-        return null;
+        
+        return null; // Retorne null em caso de erro
     }
 }
 
@@ -73,15 +66,10 @@ async function sendTransaction(transactionHex) {
         return response.data;
     } catch (error) {
         console.error("Erro ao enviar a transação:", error.message);
-        return null;
+        return null; // Retorne null em caso de erro
     }
 }
 
-module.exports = {
-    createWallet,
-    recoverWallet,
-    getBalance,
-    addressIsValid,
-    buildTransaction,
-    sendTransaction
-};
+module.exports = { createWallet, recoverWallet, getBalance, addressIsValid, buildTransaction, sendTransaction };
+
+
