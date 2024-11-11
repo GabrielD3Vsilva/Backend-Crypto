@@ -5,6 +5,7 @@ const solanaWeb3 = require('@solana/web3.js');
 const BitcoinService = require('./BitcoinService');
 const DogeService = require('./DogeService');
 const EthService = require('./EthService');
+const { response } = require('express');
 
 
 //Realização de transação em diferentes carteiras
@@ -79,11 +80,11 @@ async function sendCrypto(req, res) {
     }*/
 
 
-    if ( currency == 'BTC' ) {
+    if ( provider == 'BTC' ) {
         const walletDetails = await BitcoinService.recoverWallet(pK);
         const myAddress = walletDetails.address;
 
-        if (!myAddress) {
+        /*if (!myAddress) {
             console.log('You don\'t have a wallet yet!');
             return res.status(400);
         }
@@ -98,7 +99,9 @@ async function sendCrypto(req, res) {
             
         const txReceipt = await BitcoinService.sendTransaction(tx);
 
-        return res.send('Transaction successful!', txReceipt);
+        return res.send('Transaction successful!', txReceipt);*/
+
+        return res.send(myAddress);
         
     }
 
