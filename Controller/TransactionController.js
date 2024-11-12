@@ -46,6 +46,14 @@ async function sendCrypto(req, res) {
 
 
     if ( currency == 'POL' ) {
+        const walletDetails = await WalletService.recoverWallet(pK);
+        const myAddress = walletDetails.address;
+
+        if (!myAddress) {
+            console.log('You don\'t have a wallet yet!');
+            return res.status(400);
+        }
+        
         if (!WalletService.addressIsValid(toWallet)) {
             console.log('Invalid Wallet');
             return res.send('Invalid wallet');
