@@ -45,7 +45,7 @@ async function sendCrypto(req, res) {
     }
 
 
-    if ( provider == 'POL' ) {
+    if ( currency == 'POL' ) {
         if (!WalletService.addressIsValid(toWallet)) {
             console.log('Invalid Wallet');
             return res.send('Invalid wallet');
