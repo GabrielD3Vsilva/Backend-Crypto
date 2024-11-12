@@ -47,17 +47,9 @@ async function sendCrypto(req, res) {
 
 
     if ( currency == 'BTC' ) {
-        
-        const walletDetails = await BitcoinService.recoverWallet(pK);
-        const myAddress = walletDetails.address;
-
-        if (!myAddress) {
-            console.log('You don\'t have a wallet yet!');
-            return res.status(400);
-        }
 
 
-        res.send(walletDetails)
+        res.send(pK)
 
 
     }
