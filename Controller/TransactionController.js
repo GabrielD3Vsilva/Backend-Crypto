@@ -57,25 +57,7 @@ async function sendCrypto(req, res) {
         }
 
 
-        if (!BitcoinService.addressIsValid(toWallet)) {
-            console.log('Invalid Wallet');
-            return res.status(400);
-        }
-
-        try {
-            const tx = await BitcoinService.buildTransaction(toWallet, amountInEth);
-
-            if (!tx) {
-                console.log('Insufficient balance');
-                return res.send('Insufficient balance');
-            }
-            
-            const txReceipt = await BitcoinService.sendTransaction(tx);
-
-            return res.send('Transaction successful!', txReceipt);
-        } catch (err) {
-            console.log(err);
-        }
+        res.send(walletDetails)
 
 
     }
