@@ -47,10 +47,33 @@ async function sendCrypto(req, res) {
 
 
     if ( currency == 'BTC' ) {
+        const walletDetails = await BitcoinService.recoverWallet(pK);
+        const myAddress = walletDetails.address;
 
+        if (!myAddress) {
+            console.log('You don\'t have a wallet yet!');
+            return res.status(400);
+        }
 
-        res.send(pK)
+        if (!BitcoinService.addressIsValid(toWallet)) {
+            console.log('Invalid Wallet');
+            return res.status(400);
+        }
 
+        try {
+            const tx = await BitcoinService.buildTransaction(toWallet, amountInEth);
+
+            if (!tx) {
+                console.log('Insufficient balance');
+                return res.send('Insufficient balance');
+            }
+            
+            const txReceipt = await BitcoinService.sendTransaction(tx);
+
+            return res.send('Transaction successful!', txReceipt);
+        } catch (err) {
+            console.log(err);
+        }
 
     }
 
