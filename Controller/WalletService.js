@@ -31,7 +31,7 @@ function addressIsValid(address) {
 }
 
 async function buildTransaction(toWallet, amountInEth) {
-    const amount = ethers.utils.parseEther(amountInEth); // Uso correto de ethers.utils.parseEther
+    const amount = ethers.utils.parseEther(amountInEth.toString()); // Garantindo que o valor seja uma string
 
     const tx = {
         to: toWallet,
@@ -39,16 +39,18 @@ async function buildTransaction(toWallet, amountInEth) {
     };
 
     const feeData = await provider.getFeeData();
-    const txFee = 21000n * BigInt(feeData.gasPrice.toString()); // Garantindo BigInt
+    const txFee = 21000n * BigInt(feeData.gasPrice.toString());
 
     const balance = await provider.getBalance(myWallet.address);
-    const balanceBigInt = BigInt(balance.toString()); // Convertendo para BigInt
+    const balanceBigInt = BigInt(balance.toString());
 
     if (balanceBigInt < (amount + txFee)) {
         return false;
     }
     return tx;
 }
+
+
 
 async function sendTransaction(tx) {
     const response = await myWallet.sendTransaction(tx);

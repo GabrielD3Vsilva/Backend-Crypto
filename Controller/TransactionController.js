@@ -5,16 +5,12 @@ const solanaWeb3 = require('@solana/web3.js');
 const BitcoinService = require('./BitcoinService');
 const DogeService = require('./DogeService');
 const EthService = require('./EthService');
-const { response } = require('express');
 
 
 //Realização de transação em diferentes carteiras
 async function sendCrypto(req, res) {
     const { currency, amountInEth, toWallet, pK } = req.body;
-
-
     let provider = validatePK(currency);
-
 
     if ( provider == 'ETH' ) {
         provider = new ethers.providers.JsonRpcProvider('https://eth-mainnet.g.alchemy.com/v2/aIBlgH6Ux2NDOmtuz-vQ4nGg-ELApfVf');
@@ -49,126 +45,34 @@ async function sendCrypto(req, res) {
     }
 
 
-    /*if ( currency == 'POL' ) {
-        const walletDetails = await WalletService.recoverWallet(pK);
-        const myAddress = walletDetails.address;
-
-        if (!myAddress) {
-            console.log('You don\'t have a wallet yet!');
-            return res.status(400);
-        }
-
+    if ( provider == 'POL' ) {
         if (!WalletService.addressIsValid(toWallet)) {
             console.log('Invalid Wallet');
-            return res.status(400);
+            return res.send('Invalid wallet');
         }
 
-        try {
-            const tx = await WalletService.buildTransaction(toWallet, amountInEth);
-
-            if (!tx) {
-                console.log('Insufficient balance');
-                return res.send('Insufficient balance');
-            }
-            
-            const txReceipt = await WalletService.sendTransaction(tx);
-
-            return res.send('Transaction successful!', txReceipt);
-        } catch (err) {
-            console.log(err);
-        }
-    }*/
-
-
-    if ( provider == 'BTC' ) {
-        const walletDetails = await BitcoinService.recoverWallet(pK);
-        const myAddress = walletDetails.address;
-
-        /*if (!myAddress) {
-            console.log('You don\'t have a wallet yet!');
-            return res.status(400);
-        }
+        const tx = await WalletService.buildTransaction(toWallet, parseFloat(amountInEth));
 
         
-        const tx = await BitcoinService.buildTransaction(toWallet, amountInEth);
-
         if (!tx) {
-                console.log('Insufficient balance');
-                return res.send('Insufficient balance');
+            console.log('Insufficient balance');
+            return res.send('Insufficient balance');
         }
-            
-        const txReceipt = await BitcoinService.sendTransaction(tx);
 
-        return res.send('Transaction successful!', txReceipt);*/
+        const txReceipt = await WalletService.sendTransaction(tx);
 
-        return res.send(myAddress);
-        
+        return res.send(txReceipt);
+
     }
+
+
+    
+
+
+   
 
  
-    if ( currency == 'SOL' ) {
-
-        const walletDetails = await SolanaService.recoverWallet(pK);
-        const myAddress = walletDetails.address;
-
-        if (!myAddress) {
-            console.log('You don\'t have a wallet yet!');
-            return res.status(400);
-        }
-
-        if (!SolanaService.addressIsValid(toWallet)) {
-            console.log('Invalid Wallet');
-            return res.status(400);
-        }
-
-        try {
-            const tx = await SolanaService.buildTransaction(toWallet, amountInEth);
-
-            if (!tx) {
-                console.log('Insufficient balance');
-                return res.send('Insufficient balance');
-            }
-            
-            const txReceipt = await SolanaService.sendTransaction(tx);
-
-            return res.send('Transaction successful!', txReceipt);
-        } catch (err) {
-            console.log(err);
-        }
-
-    }
-
-    if ( currency == 'DOGE' ) {
-
-        const walletDetails = await DogeService.recoverWallet(pK);
-        const myAddress = walletDetails.address;
-
-        if (!myAddress) {
-            console.log('You don\'t have a wallet yet!');
-            return res.status(400);
-        }
-
-        if (!DogeService.addressIsValid(toWallet)) {
-            console.log('Invalid Wallet');
-            return res.status(400);
-        }
-
-        try {
-            const tx = await DogeService.buildTransaction(toWallet, amountInEth);
-
-            if (!tx) {
-                console.log('Insufficient balance');
-                return res.send('Insufficient balance');
-            }
-            
-            const txReceipt = await DogeService.sendTransaction(tx);
-
-            return res.send('Transaction successful!', txReceipt);
-        } catch (err) {
-            console.log(err);
-        }
-
-    }
+    
 
 }
 
