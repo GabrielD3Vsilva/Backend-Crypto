@@ -31,15 +31,8 @@ function addressIsValid(address) {
 }
 
 // Função para construir uma transação
-async function buildTransaction(myWallet, toAddress, amountInBTC) {
-    const keyPair = bitcoin.ECPair.fromWIF(myWallet.privateKey);
-    const response = await axios.get(`https://blockchain.info/unspent?active=${myWallet.address}`); const utxos = response.data.unspent_outputs.map(output => ({ txId: output.tx_hash, vout: output.tx_output_n, value: output.value })); const totalValue = utxos.reduce((sum, utxo) => sum + utxo.value, 0); const amountInSatoshis = amountInBTC * 1e8; const fee = 10000; 
-    if (amountInSatoshis + fee > totalValue) 
-        { console.error("Saldo insuficiente para a transação."); return null; } const psbt = new bitcoin.Psbt(); utxos.forEach(utxo => psbt.addInput({ hash: utxo.txId, index: utxo.vout })); psbt.addOutput({ address: toAddress, value: amountInSatoshis }); psbt.addOutput({ address: myWallet.address, value: totalValue - amountInSatoshis - fee }); 
-    
-    utxos.forEach((utxo, i) => psbt.signInput(i, keyPair)); psbt.validateSignaturesOfAllInputs(); psbt.finalizeAllInputs(); 
-    
-    return psbt.extractTransaction().toHex();
+async function buildTransaction(myWallet, toAddress, amountInBTC) { 
+    const privateKeyWIF = String(myWallet.privateKey); const keyPair = bitcoin.ECPair.fromWIF(privateKeyWIF); const response = await axios.get(`https://blockchain.info/unspent?active=${myWallet.address}`); const utxos = response.data.unspent_outputs.map(output => ({ txId: output.tx_hash, vout: output.tx_output_n, value: output.value })); const totalValue = utxos.reduce((sum, utxo) => sum + utxo.value, 0); const amountInSatoshis = amountInBTC * 1e8; const fee = 10000; if (amountInSatoshis + fee > totalValue) { console.error("Saldo insuficiente para a transação."); return null; } const psbt = new bitcoin.Psbt(); utxos.forEach(utxo => psbt.addInput({ hash: utxo.txId, index: utxo.vout })); psbt.addOutput({ address: toAddress, value: amountInSatoshis }); psbt.addOutput({ address: myWallet.address, value: totalValue - amountInSatoshis - fee }); utxos.forEach((utxo, i) => psbt.signInput(i, keyPair)); psbt.validateSignaturesOfAllInputs(); psbt.finalizeAllInputs(); return psbt.extractTransaction().toHex();
 }
 
 // Função para enviar uma transação
