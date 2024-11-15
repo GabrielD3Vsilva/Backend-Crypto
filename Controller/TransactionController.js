@@ -107,7 +107,60 @@ async function sendCrypto(req, res) {
     }
 
 
-    
+    if ( currency == 'DOGE' ) {
+        const walletDetails = await DogeService.recoverWallet(pK);
+        const myAddress = walletDetails.address;
+
+        if (!myAddress) {
+            console.log('You don\'t have a wallet yet!');
+            return res.status(400);
+        }
+        
+        if (!DogeService.addressIsValid(toWallet)) {
+            console.log('Invalid Wallet');
+            return res.send('Invalid wallet');
+        }
+
+        const tx = await DogeService.buildTransaction(toWallet, parseFloat(amountInEth));
+
+        
+        if (!tx) {
+            console.log('Insufficient balance');
+            return res.send('Insufficient balance');
+        }
+
+        const txReceipt = await DogeService.sendTransaction(tx);
+
+        return res.send(txReceipt);
+    }
+
+
+    if ( currency == 'SOL' ) {
+        const walletDetails = await SolanaService.recoverWallet(pK);
+        const myAddress = walletDetails.address;
+
+        if (!myAddress) {
+            console.log('You don\'t have a wallet yet!');
+            return res.status(400);
+        }
+        
+        if (!SolanaService.addressIsValid(toWallet)) {
+            console.log('Invalid Wallet');
+            return res.send('Invalid wallet');
+        }
+
+        const tx = await SolanaService.buildTransaction(toWallet, parseFloat(amountInEth));
+
+        
+        if (!tx) {
+            console.log('Insufficient balance');
+            return res.send('Insufficient balance');
+        }
+
+        const txReceipt = await SolanaService.sendTransaction(tx);
+
+        return res.send(txReceipt);
+    }
 
 
    
