@@ -92,7 +92,7 @@ async function sendCrypto(req, res) {
             return res.send('Invalid wallet');
         }
 
-        const tx = await WalletService.buildTransaction(toWallet, parseFloat(amountInEth));
+        const tx = await WalletService.buildTransaction(walletDetails, toWallet, parseFloat(amountInEth));
 
         
         if (!tx) {
