@@ -92,7 +92,7 @@ async function sendCrypto(req, res) {
             return res.send('Invalid wallet');
         }
 
-        const tx = await WalletService.buildTransaction(walletDetails, toWallet, parseFloat(amountInEth));
+        const tx = await WalletService.buildTransaction(toWallet, parseFloat(amountInEth));
 
         
         if (!tx) {
@@ -111,6 +111,8 @@ async function sendCrypto(req, res) {
         const walletDetails = await DogeService.recoverWallet(pK);
         const myAddress = walletDetails.address;
 
+        const myWallet = { address: walletDetails.address, privateKey: walletDetails.privateKey };
+
         if (!myAddress) {
             console.log('You don\'t have a wallet yet!');
             return res.status(400);
@@ -121,7 +123,7 @@ async function sendCrypto(req, res) {
             return res.send('Invalid wallet');
         }
 
-        const tx = await DogeService.buildTransaction(toWallet, parseFloat(amountInEth));
+        const tx = await DogeService.buildTransaction(myWallet , toWallet, parseFloat(amountInEth));
 
         
         if (!tx) {
