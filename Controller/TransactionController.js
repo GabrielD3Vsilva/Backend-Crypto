@@ -138,7 +138,10 @@ async function sendCrypto(req, res) {
 
 
     if ( currency == 'SOL' ) {
-        const walletDetails = await SolanaService.recoverWallet(pK);
+
+        const pKUint = new Uint8Array(pK);
+        const pKArray = Object.values(pK).join(',');
+        const walletDetails = await SolanaService.recoverWallet(pKArray);
         const myAddress = walletDetails.address;
 
         if (!myAddress) {
@@ -165,19 +168,11 @@ async function sendCrypto(req, res) {
     }
 
 
-   
-
- 
-    
-
 }
 
-
-
-
-
-
-
+/*
+    
+*/
 
 //Verificação e retorno de saldo em diferentes carteiras 
 async function getBalance(req, res) {
