@@ -142,6 +142,9 @@ async function sendCrypto(req, res) {
         const pKUint = new Uint8Array(pK);
         const pKArray = Object.values(pK).join(',');
         const walletDetails = await SolanaService.recoverWallet(pKArray);
+        const myWallet = { address: walletDetails.address, privateKey: walletDetails.privateKey }; 
+
+
         const myAddress = walletDetails.address;
 
         if (!myAddress) {
@@ -154,7 +157,7 @@ async function sendCrypto(req, res) {
             return res.send('Invalid wallet');
         }
 
-        const tx = await SolanaService.buildTransaction(toWallet, parseFloat(amountInEth));
+        const tx = await SolanaService.buildTransaction(myWallet, toWallet, parseFloat(amountInEth));
 
         
         if (!tx) {
