@@ -22,7 +22,14 @@ const UserSchema = new mongoose.Schema({
     walletEth: String,
     pKEth: String,
     walletBitcoin: String,
-    pKBitcoin: String
+    pKBitcoin: String,
+    PaymentsArray: [{
+        wallet: String,
+        toWallet: String,
+        currency: String,
+        amount: Number
+    }]
+
 });
 
 module.exports = {

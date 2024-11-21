@@ -5,11 +5,12 @@ const solanaWeb3 = require('@solana/web3.js');
 const BitcoinService = require('./BitcoinService');
 const DogeService = require('./DogeService');
 const EthService = require('./EthService');
+const Db = require('../db/Db');
 
 
 //Realização de transação em diferentes carteiras
 async function sendCrypto(req, res) {
-    const { currency, amountInEth, toWallet, pK } = req.body;
+    const { wallet, currency, amountInEth, toWallet, pK, id } = req.body;
     let provider = validatePK(currency);
 
     if ( provider == 'ETH' ) {
@@ -29,6 +30,13 @@ async function sendCrypto(req, res) {
         }
 
         try {
+            const user = await Db.User.findOne({_id: id});
+
+            if (!user) {
+                console.log('Usuário não encontrado')
+                return res.status(404).send('Usuário não encontrado');
+            }
+
             const tx = await EthService.buildTransaction(toWallet, amountInEth);
 
             if (!tx) {
@@ -37,6 +45,15 @@ async function sendCrypto(req, res) {
             }
             
             const txReceipt = await EthService.sendTransaction(tx);
+
+            user.PaymentsArray.push(
+                {
+                    wallet: wallet,
+                    amount: amountInEth,
+                    toWallet: toWallet,
+                    currency: currency
+                }
+            );
 
             return res.send('Transaction successful!', txReceipt);
         } catch (err) {
@@ -47,6 +64,7 @@ async function sendCrypto(req, res) {
 
 
     if ( currency == 'BTC' ) {
+        const user = await Db.User.findOne({_id: id});
         const walletDetails = await BitcoinService.recoverWallet(pK);
         const myAddress = walletDetails.address;
 
@@ -70,6 +88,15 @@ async function sendCrypto(req, res) {
             
             const txReceipt = await BitcoinService.sendTransaction(tx);
 
+            user.PaymentsArray.push(
+                {
+                    wallet: wallet,
+                    amount: amountInEth,
+                    toWallet: toWallet,
+                    currency: currency
+                }
+            );
+
             return res.send('Transaction successful!', txReceipt);
         } catch (err) {
             console.log(err);
@@ -78,7 +105,9 @@ async function sendCrypto(req, res) {
     }
 
 
+
     if ( currency == 'POL' ) {
+        const user = await Db.User.findOne({_id: id});
         const walletDetails = await WalletService.recoverWallet(pK);
         const myAddress = walletDetails.address;
 
@@ -102,12 +131,23 @@ async function sendCrypto(req, res) {
 
         const txReceipt = await WalletService.sendTransaction(tx);
 
+        user.PaymentsArray.push(
+            {
+                wallet: wallet,
+                amount: amountInEth,
+                toWallet: toWallet,
+                currency: currency
+            }
+        );
+
         return res.send(txReceipt);
 
     }
 
 
     if ( currency == 'DOGE' ) {
+        const user = await Db.User.findOne({_id: id});
+
         const walletDetails = await DogeService.recoverWallet(pK);
         const myAddress = walletDetails.address;
 
@@ -132,13 +172,20 @@ async function sendCrypto(req, res) {
         }
 
         const txReceipt = await DogeService.sendTransaction(tx);
-
+        user.PaymentsArray.push(
+            {
+                wallet: wallet,
+                amount: amountInEth,
+                toWallet: toWallet,
+                currency: currency
+            }
+        );
         return res.send(txReceipt);
     }
 
 
     if ( currency == 'SOL' ) {
-
+        const user = await Db.User.findOne({_id: id});
         const pKUint = new Uint8Array(pK);
         const pKArray = Object.values(pK).join(',');
         const walletDetails = await SolanaService.recoverWallet(pKArray);
@@ -166,7 +213,14 @@ async function sendCrypto(req, res) {
         }
 
         const txReceipt = await SolanaService.sendTransaction(tx);
-
+        user.PaymentsArray.push(
+            {
+                wallet: wallet,
+                amount: amountInEth,
+                toWallet: toWallet,
+                currency: currency
+            }
+        );
         return res.send(txReceipt);
     }
 
