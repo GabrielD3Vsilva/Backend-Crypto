@@ -1,7 +1,9 @@
 const solanaWeb3 = require('@solana/web3.js');
 
-const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('mainnet-beta'), 'confirmed');
+// Conexão à rede Solana pela Alchemy
+const connection = new solanaWeb3.Connection('https://solana-mainnet.g.alchemy.com/v2/aIBlgH6Ux2NDOmtuz-vQ4nGg-ELApfVf', 'confirmed');
 
+let myWallet = null;
 
 function createWallet() {
     const myWallet = solanaWeb3.Keypair.generate();
@@ -12,26 +14,23 @@ function createWallet() {
     };
 }
 
-async function recoverWallet(pkOrMnemonic) {
-    // Verifica se é um Uint8Array ou uma string
+function recoverWallet(privateKey) {
     let secretKeyArray;
-    if (pkOrMnemonic instanceof Uint8Array) {
-        secretKeyArray = pkOrMnemonic;
-    } else if (typeof pkOrMnemonic === 'string' && pkOrMnemonic.indexOf(" ") === -1) {
-        secretKeyArray = Uint8Array.from(pkOrMnemonic.split(',').map(Number));
+    if (privateKey instanceof Uint8Array) {
+        secretKeyArray = privateKey;
+    } else if (typeof privateKey === 'string' && privateKey.indexOf(" ") === -1) {
+        secretKeyArray = Uint8Array.from(privateKey.split(',').map(Number));
     } else {
         throw new Error("Solana não suporta nativamente a recuperação por mnemônico");
     }
 
-    const myWallet = solanaWeb3.Keypair.fromSecretKey(secretKeyArray);
+    myWallet = solanaWeb3.Keypair.fromSecretKey(secretKeyArray);
     return {
         wallet: myWallet,
         address: myWallet.publicKey.toString(),
         privateKey: Array.from(myWallet.secretKey)
     };
 }
-
-
 
 async function getBalance(address) {
     const publicKey = new solanaWeb3.PublicKey(address);
@@ -42,7 +41,6 @@ async function getBalance(address) {
     };
 }
 
-
 function addressIsValid(address) {
     try {
         new solanaWeb3.PublicKey(address);
@@ -52,7 +50,11 @@ function addressIsValid(address) {
     }
 }
 
-async function buildTransaction(myWallet, toWallet, amountInSOL) {
+async function buildTransaction(toWallet, amountInSOL) {
+    if (!myWallet) {
+        throw new Error("Carteira não está definida. Certifique-se de chamar recoverWallet ou createWallet primeiro.");
+    }
+
     const transaction = new solanaWeb3.Transaction().add(
         solanaWeb3.SystemProgram.transfer({
             fromPubkey: myWallet.publicKey,
@@ -60,8 +62,9 @@ async function buildTransaction(myWallet, toWallet, amountInSOL) {
             lamports: amountInSOL * solanaWeb3.LAMPORTS_PER_SOL,
         }),
     );
-    const { blockhash } = await connection.getRecentBlockhash();
-    transaction.recentBlockhash = blockhash;
+
+    const latestBlockhash = await connection.getLatestBlockhash();
+    transaction.recentBlockhash = latestBlockhash.blockhash;
     transaction.feePayer = myWallet.publicKey;
 
     // Calcular a taxa de transação (aproximada)
@@ -74,7 +77,11 @@ async function buildTransaction(myWallet, toWallet, amountInSOL) {
     return transaction;
 }
 
-async function sendTransaction(transaction, myWallet) {
+async function sendTransaction(transaction) {
+    if (!myWallet) {
+        throw new Error("Carteira não está definida. Certifique-se de chamar recoverWallet ou createWallet primeiro.");
+    }
+
     const signature = await solanaWeb3.sendAndConfirmTransaction(connection, transaction, [myWallet]);
     return signature;
 }
