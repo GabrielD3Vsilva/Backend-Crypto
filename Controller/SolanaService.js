@@ -1,7 +1,7 @@
 const solanaWeb3 = require('@solana/web3.js');
 
 // Conexão à rede Solana pela Alchemy
-const connection = new solanaWeb3.Connection('https://solana-mainnet.g.alchemy.com/v2/aIBlgH6Ux2NDOmtuz-vQ4nGg-ELApfVf', 'confirmed');
+const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('mainnet-beta'), 'confirmed');
 
 let myWallet = null;
 
