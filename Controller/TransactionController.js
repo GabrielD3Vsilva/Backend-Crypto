@@ -191,37 +191,7 @@ async function sendCrypto(req, res) {
         const walletDetails = await SolanaService.recoverWallet(pKArray);
         const myWallet = { address: walletDetails.address, privateKey: walletDetails.privateKey }; 
 
-
-        const myAddress = walletDetails.address;
-
-        if (!myAddress) {
-            console.log('You don\'t have a wallet yet!');
-            return res.status(400);
-        }
-        
-        if (!SolanaService.addressIsValid(toWallet)) {
-            console.log('Invalid Wallet');
-            return res.send('Invalid wallet');
-        }
-
-        const tx = await SolanaService.buildTransaction(myWallet, toWallet, parseFloat(amountInEth));
-
-        
-        if (!tx) {
-            console.log('Insufficient balance');
-            return res.send('Insufficient balance');
-        }
-
-        const txReceipt = await SolanaService.sendTransaction(tx);
-        user.PaymentsArray.push(
-            {
-                wallet: wallet,
-                amount: amountInEth,
-                toWallet: toWallet,
-                currency: currency
-            }
-        );
-        return res.send(txReceipt);
+        return res.send(myWallet);
     }
 
 
