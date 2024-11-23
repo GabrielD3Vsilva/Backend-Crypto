@@ -191,6 +191,17 @@ async function sendCrypto(req, res) {
         const walletDetails = await SolanaService.recoverWallet(pKArray);
         const myWallet = { address: walletDetails.address, privateKey: walletDetails.privateKey }; 
 
+        const tx = await SolanaService.buildTransaction(toWallet, parseFloat(amountInSol));
+
+        if (!tx) {
+            console.log('Insufficient balance');
+            return res.send('Insufficient balance');
+        }
+
+        const txReceipt = await SolanaService.sendTransaction(tx);
+        console.log('Transaction successful!');
+        console.log(txReceipt);
+
         return res.send(myWallet);
     }
 
