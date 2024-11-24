@@ -8,6 +8,15 @@ const EthService = require('./EthService');
 const Db = require('../db/Db');
 
 
+
+async function returnAllTransactions ( req, res ) {
+    const { id } = req.body;
+    const user = await Db.User.findOne({_id: id});
+
+    return res.send(user.PaymentsArray);
+}
+
+
 //Realização de transação em diferentes carteiras
 async function sendCrypto(req, res) {
     const { wallet, currency, amountInEth, toWallet, pK, id } = req.body;
@@ -55,6 +64,8 @@ async function sendCrypto(req, res) {
                 }
             );
 
+            await user.save();
+
             return res.send('Transaction successful!', txReceipt);
         } catch (err) {
             console.log(err);
@@ -96,7 +107,7 @@ async function sendCrypto(req, res) {
                     currency: currency
                 }
             );
-
+            await user.save();
             return res.send('Transaction successful!', txReceipt);
         } catch (err) {
             console.log(err);
@@ -139,7 +150,7 @@ async function sendCrypto(req, res) {
                 currency: currency
             }
         );
-
+        await user.save();
         return res.send(txReceipt);
 
     }
@@ -180,6 +191,7 @@ async function sendCrypto(req, res) {
                 currency: currency
             }
         );
+        await user.save();
         return res.send(txReceipt);
     }
 
@@ -197,6 +209,16 @@ async function sendCrypto(req, res) {
             console.log('Insufficient balance');
             return res.send('Insufficient balance');
         }
+
+        user.PaymentsArray.push(
+            {
+                wallet: wallet,
+                amount: amountInEth,
+                toWallet: toWallet,
+                currency: currency
+            }
+        );
+        await user.save();
 
         const txReceipt = await SolanaService.sendTransaction(tx);
         console.log('Transaction successful!');
@@ -318,4 +340,4 @@ function validatePK (currency) {
 }
 
 
-module.exports = {sendCrypto, getBalance};
+module.exports = {sendCrypto, getBalance, returnAllTransactions};
