@@ -13,7 +13,7 @@ async function returnAllTransactions ( req, res ) {
     const { id } = req.body;
     const user = await Db.User.findOne({_id: id});
 
-    return res.send(user.PaymentsArray);
+    return res.send(user);
 }
 
 
