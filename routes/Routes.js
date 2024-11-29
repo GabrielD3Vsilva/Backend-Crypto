@@ -13,5 +13,6 @@ routes.post('/sendCoin', TransactionController.sendCrypto);
 routes.post('/getBalance', TransactionController.getBalance);
 routes.post('/findCryptoShops', findCryptoShops)
 routes.post('/returnTransactions', TransactionController.returnAllTransactions);
+routes.post('/returnAllBalances', TransactionController.returnAllBalances);
 
 module.exports = routes;

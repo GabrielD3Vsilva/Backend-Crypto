@@ -20,6 +20,11 @@ async function findCryptoShops ( req, res ) {
 }
 
 
+function registerShop ( req, res ) {
+    
+}
+
+
 function getDistance(lat1, lon1, lat2, lon2) {
     const R = 6371; // Raio da Terra em km
     const dLat = (lat2 - lat1) * (Math.PI / 180);

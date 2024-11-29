@@ -16,6 +16,101 @@ async function returnAllTransactions ( req, res ) {
     return res.send(user);
 }
 
+async function returnAllBalances ( req, res ) {
+    const { pK, pKSolana, pKEth, pKBitcoin, pKDoge } = req.body;
+
+    const balanceInPOL = await findBalancePOL( pK );
+    const balanceInETH = await findBalanceETH( pKEth );
+    const balanceInBTC = await findBalanceBTC( pKBitcoin );
+    const balanceInDOGE = await findBalanceDOGE( pKDoge );
+    const balanceInSOL = await findBalanceSOL( pKSolana );
+
+    const obj = {
+        balanceInPOL: balanceInPOL,
+        balanceInETH: balanceInETH,
+        balanceInBTC: balanceInBTC,
+        balanceInDOGE: balanceInDOGE,
+        balanceInSOL: balanceInSOL
+    }
+
+
+    return res.send(obj);
+}
+
+async function findBalanceDOGE ( pKDoge ) {
+    const walletDetails = DogeService.recoverWallet(pKDoge);
+    const myAddress = walletDetails.privateKey;
+    const balance = await DogeService.getBalance(myAddress);
+
+    return balance;
+}
+
+async function findBalanceSOL (pKSolana) {
+    const pKUint = new Uint8Array(pKSolana);
+        const pKArray = Object.values(pKSolana).join(',');
+
+        if (pKUint.length !== 64) {
+            return res.status(400).send('Invalid secret key length for Solana');
+        }
+
+        try {
+            const walletDetails = await SolanaService.recoverWallet(pKArray);
+            
+            if (!walletDetails.address) {
+                console.log('You don\'t have a wallet yet! ');
+                return res.status(400).send('You don\'t have a wallet yet! ');
+            }
+        
+            const balance = await SolanaService.getBalance(walletDetails.address);
+            
+            const balanceInSOL = {
+                balanceInLamports: balance,
+                balanceInSOL: balance / solanaWeb3.LAMPORTS_PER_SOL
+            }
+        
+            return balanceInSOL.balanceInSOL;
+
+        } catch (err) {
+            console.error('Failed to recover wallet:', err.message);
+        }
+}
+
+async function findBalanceBTC ( pKBitcoin ) {
+    const walletDetails = BitcoinService.recoverWallet(pKBitcoin);
+    const myAddress = walletDetails.address;
+    const balance = await BitcoinService.getBalance(myAddress);
+    return balance;
+}
+
+async function findBalancePOL( pK ) {
+    let myWallet = WalletService.recoverWallet(pK);
+    
+    const myAddress = myWallet.address;
+
+    if (!myAddress) {
+        console.log('You don\'t have a wallet yet!');
+        return res.status(200).send('You don\'t have a wallet yet!');
+    }
+
+    const balance = await provider.getBalance(myAddress);
+
+    const balanceInEth = {
+        balanceInWei: balance.toString(),
+        balanceInEth: ethers.utils.formatEther(balance)
+    }
+
+    return balanceInEth.balanceInEth;
+}
+
+async function findBalanceETH ( pKEth ) {
+    provider = new ethers.providers.JsonRpcProvider('https://eth-mainnet.g.alchemy.com/v2/aIBlgH6Ux2NDOmtuz-vQ4nGg-ELApfVf');
+    const walletDetails = await EthService.recoverWallet(pKEth);
+    const myAddress = walletDetails.address;
+
+    const balanceWei = await provider.getBalance(myAddress);
+    return ethers.utils.formatEther(balanceWei);
+}
+
 
 //Realização de transação em diferentes carteiras
 async function sendCrypto(req, res) {
@@ -340,4 +435,4 @@ function validatePK (currency) {
 }
 
 
-module.exports = {sendCrypto, getBalance, returnAllTransactions};
+module.exports = {sendCrypto, getBalance, returnAllTransactions, returnAllBalances};
