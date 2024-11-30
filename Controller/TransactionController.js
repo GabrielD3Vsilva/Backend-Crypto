@@ -19,24 +19,19 @@ async function returnAllTransactions ( req, res ) {
 async function returnAllBalances ( req, res ) {
     const { pK, pKSolana, pKEth, pKBitcoin, pKDoge } = req.body;
 
-    //const balanceInPOL = await findBalancePOL( pK );
-    /*const balanceInETH = await findBalanceETH( pKEth );
+    const balanceInPOL = await findBalancePOL( pK );
+    const balanceInETH = await findBalanceETH( pKEth );
     const balanceInBTC = await findBalanceBTC( pKBitcoin );
     const balanceInDOGE = await findBalanceDOGE( pKDoge );
     const balanceInSOL = await findBalanceSOL( pKSolana );
 
     const obj = {
-        //balanceInPOL: balanceInPOL,
+        balanceInPOL: balanceInPOL,
         balanceInETH: balanceInETH,
         balanceInBTC: balanceInBTC,
         balanceInDOGE: balanceInDOGE,
         balanceInSOL: balanceInSOL
-    }*/
-
-    const obj = {
-        pK, pKSolana, pKEth, pKBitcoin, pKDoge
-    }
-
+    };
 
     return res.send(obj);
 }
@@ -86,7 +81,7 @@ async function findBalanceBTC ( pKBitcoin ) {
     return balance;
 }
 
-/*async function findBalancePOL( pK ) {
+async function findBalancePOL( pK ) {
     let myWallet = WalletService.recoverWallet(pK);
     
     const myAddress = myWallet.address;
@@ -104,7 +99,7 @@ async function findBalanceBTC ( pKBitcoin ) {
     }
 
     return balanceInEth.balanceInEth;
-}*/
+}
 
 async function findBalanceETH ( pKEth ) {
     provider = new ethers.providers.JsonRpcProvider('https://eth-mainnet.g.alchemy.com/v2/aIBlgH6Ux2NDOmtuz-vQ4nGg-ELApfVf');
