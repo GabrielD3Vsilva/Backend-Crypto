@@ -20,7 +20,7 @@ async function returnAllBalances ( req, res ) {
     const { pK, pKSolana, pKEth, pKBitcoin, pKDoge } = req.body;
 
     //const balanceInPOL = await findBalancePOL( pK );
-    const balanceInETH = await findBalanceETH( pKEth );
+    /*const balanceInETH = await findBalanceETH( pKEth );
     const balanceInBTC = await findBalanceBTC( pKBitcoin );
     const balanceInDOGE = await findBalanceDOGE( pKDoge );
     const balanceInSOL = await findBalanceSOL( pKSolana );
@@ -31,6 +31,10 @@ async function returnAllBalances ( req, res ) {
         balanceInBTC: balanceInBTC,
         balanceInDOGE: balanceInDOGE,
         balanceInSOL: balanceInSOL
+    }*/
+
+    const obj = {
+        pK, pKSolana, pKEth, pKBitcoin, pKDoge
     }
 
 
