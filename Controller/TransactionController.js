@@ -83,7 +83,7 @@ async function findBalanceBTC ( pKBitcoin ) {
 
 async function findBalancePOL( pK ) {
     let myWallet = WalletService.recoverWallet(pK);
-    
+    const provider = new ethers.providers.JsonRpcProvider('https://polygon-rpc.com');
     const myAddress = myWallet.address;
 
     if (!myAddress) {
