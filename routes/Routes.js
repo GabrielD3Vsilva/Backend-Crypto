@@ -26,7 +26,7 @@ const client = Binance({
     apiSecret: 'vI6yYJIlLSg8lpoyvhR91QEJvYqIPZedQ4drOuaj2lCX4kpqdxtc7RJKsFrIu3y8', 
 }); 
     
-app.post('/buy-ethereum', async (req, res) => { 
+routes.post('/buy-ethereum', async (req, res) => { 
     const { amount, walletAddress } = req.body; 
 
     try { 
