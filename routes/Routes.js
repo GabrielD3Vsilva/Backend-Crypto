@@ -1,5 +1,6 @@
 const routes = require('express').Router();
-const axios = require('axios')
+const axios = require('axios');
+const ethers = require('ethers');
 const RegisterController = require('../Controller/RegisterController');
 const LoginController = require('../Controller/LoginController');
 const DocumentsController = require('../Controller/DocumentsController');
