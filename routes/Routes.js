@@ -7,6 +7,8 @@ const { findCryptoShops } = require('../Controller/FindLocations');
 const CryptoService = require('../Controller/CryptosService');
 const axios = require('axios'); 
 const ethers = require('ethers');
+const QRCode = require('qrcode'); 
+const Binance = require('binance-api-node').default;
 
 routes.post('/register', RegisterController.DoRegisterInDb);
 routes.post('/login', LoginController.DoLoginInDb);
@@ -19,58 +21,24 @@ routes.post('/returnAllBalances', TransactionController.returnAllBalances);
 routes.get('/getCryptoData', CryptoService.getCryptoData);
 
 
-const ETHEREUM_API_URL = 'https://eth-mainnet.g.alchemy.com/v2/aIBlgH6Ux2NDOmtuz-vQ4nGg-ELApfVf'; // URL da API Alchemy
+const client = Binance({ 
+    apiKey: 'HPMFQ0KqJHsUNMqMjaMCAERfPfX2MuED1CSAwcrAba8hSZBop4pBWWOmQqUsUni6', 
+    apiSecret: 'vI6yYJIlLSg8lpoyvhR91QEJvYqIPZedQ4drOuaj2lCX4kpqdxtc7RJKsFrIu3y8', 
+}); 
+    
+app.post('/buy-ethereum', async (req, res) => { 
+    const { amount, walletAddress } = req.body; 
 
-routes.post('/create-payment', async (req, res) => {
-    const { amount, walletAddress } = req.body;
-    const paymentData = await createPixPayment(amount);
-    res.json(paymentData);
-});
-
-routes.post('/confirm-payment', async (req, res) => {
-    const { paymentId, walletAddress, amount } = req.body;
-    const isPaid = await checkPixPaymentStatus(paymentId);
-
-    if (isPaid) {
-        const etherAmount = convertToEther(amount);
-        await sendEther(walletAddress, etherAmount);
-        res.json({ status: 'success' });
-    } else {
-        res.json({ status: 'pending' });
-    }
-});
-
-const createPixPayment = async (amount) => {
-    // Implementação para criar uma cobrança Pix e retornar os dados do QR Code
-    const response = await axios.post(`${ETHEREUM_API_URL}/create-pix-payment`, { amount });
-    return response.data;
-};
-
-const checkPixPaymentStatus = async (paymentId) => {
-    // Implementação para verificar o status do pagamento Pix
-    const response = await axios.get(`${ETHEREUM_API_URL}/check-payment-status/${paymentId}`);
-    return response.data.isPaid;
-};
-
-const convertToEther = (amount) => {
-    // Converter o valor para Ethereum
-    return ethers.utils.parseEther(amount.toString());
-};
-
-const sendEther = async (walletAddress, amount) => {
-    // Atualizar para usar o Alchemy como provedor
-    const provider = new ethers.providers.JsonRpcProvider('https://eth-mainnet.g.alchemy.com/v2/aIBlgH6Ux2NDOmtuz-vQ4nGg-ELApfVf');
-    const wallet = new ethers.Wallet('YOUR_PRIVATE_KEY', provider);
-
-    const tx = {
-        to: walletAddress,
-        value: amount
-    };
-
-    const transaction = await wallet.sendTransaction(tx);
-    await transaction.wait();
-};
-
-
+    try { 
+        const ethPriceData = await client.prices({ symbol: 'ETHUSDT' }); 
+        const ethPrice = ethPriceData.ETHUSDT; 
+        const totalPrice = amount * ethPrice;const pixPayload = `00020126580014BR.GOV.BCB.PIX0136${walletAddress}5204000053039865802BR5913Nome do Beneficiário6008Cidade62290525`; 
+        
+        const qrCode = await QRCode.toDataURL(pixPayload); 
+        
+        res.json({ qrCode, totalPrice }); 
+} catch (error) { 
+    res.status(500).json({ error: 'Erro ao processar a solicitação' }); 
+} });
 
 module.exports = routes;
