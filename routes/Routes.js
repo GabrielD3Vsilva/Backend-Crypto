@@ -38,7 +38,7 @@ routes.post('/buy-ethereum', async (req, res) => {
         
         res.json({ qrCode, totalPrice }); 
 } catch (error) { 
-    res.status(500).json({ error: 'Erro ao processar a solicitação' }); 
+    console.log(error);
 } });
 
 module.exports = routes;
