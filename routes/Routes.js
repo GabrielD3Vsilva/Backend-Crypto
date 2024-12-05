@@ -7,10 +7,10 @@ const { findCryptoShops } = require('../Controller/FindLocations');
 const CryptoService = require('../Controller/CryptosService');
 const axios = require('axios'); 
 const ethers = require('ethers');
-const QRCode = require('qrcode'); 
 const shortid = require('shortid');
 const CurrencyConverter = require('currency-converter-lt');
-const { Gerencianet } = require('gn-api-sdk-node');
+const { Pix } = require('qrcode-pix');
+ const qrcode = require('qrcode');
 
 routes.post('/register', RegisterController.DoRegisterInDb);
 routes.post('/login', LoginController.DoLoginInDb);
@@ -24,7 +24,7 @@ routes.get('/getCryptoData', CryptoService.getCryptoData);
 
 let dataStore = {};
 
-routes.post('/buy-ethereum', async (req, res) => {
+app.post('/buy-ethereum', async (req, res) => {
     const { amount, walletAddress } = req.body;
 
     try {
@@ -45,28 +45,30 @@ routes.post('/buy-ethereum', async (req, res) => {
         const payloadId = shortid.generate();
         dataStore[payloadId] = { amount, walletAddress, totalPriceBRL };
 
-        // Gerar o QR Code PIX usando a API do Banco Central do Brasil
-        const response = await axios.post('https://pix-api.bacen.gov.br/api/v1/charge', {
-            correlationID: payloadId,
+        // Gerar o QR Code PIX usando qrcode-pix
+        const pix = Pix({
+            version: '01',
+            key: '57212480843',
+            name: 'Gabriel',
+            city: 'Taubaté',
+            transactionId: payloadId,
+            message: 'Compra de Ethereum',
             value: totalPriceBRL.toFixed(2),
-            comment: 'Compra de Ethereum',
-            identifier: payloadId
-        }, {
-            headers: {
-                'Content-Type': 'application/json'
-            }
         });
 
-        const qrCode = response.data.charge.pixQRCodeImage;
+        const payload = pix.payload();
 
-        res.json({ qrCode, totalPrice: totalPriceBRL });
+        // Gerar a imagem do QR Code
+        const qrCodeImage = await qrcode.toDataURL(payload);
+
+        res.json({ qrCode: qrCodeImage, totalPrice: totalPriceBRL });
     } catch (error) {
         console.log('Error:', error);
         res.status(500).send('Internal Server Error');
     }
 });
 
-routes.get('/payload/:id', (req, res) => {
+app.get('/payload/:id', (req, res) => {
     const payloadId = req.params.id;
     const data = dataStore[payloadId];
     if (data) {
@@ -75,6 +77,7 @@ routes.get('/payload/:id', (req, res) => {
         res.status(404).send('Not Found');
     }
 });
+
 
 
 
