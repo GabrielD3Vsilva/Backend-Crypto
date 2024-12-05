@@ -10,7 +10,7 @@ const ethers = require('ethers');
 const QRCode = require('qrcode'); 
 const shortid = require('shortid');
 const CurrencyConverter = require('currency-converter-lt');
-const { GeradorDePix } = require('node-pix');
+const { Pix } = require('node-pix');
 
 routes.post('/register', RegisterController.DoRegisterInDb);
 routes.post('/login', LoginController.DoLoginInDb);
@@ -46,7 +46,7 @@ routes.post('/buy-ethereum', async (req, res) => {
         dataStore[payloadId] = { amount, walletAddress, totalPriceBRL };
 
         // Gerar o QR Code PIX
-        const geradorDePix = new GeradorDePix({
+        const pix = new Pix({
             chave: '57212480843',
             valor: totalPriceBRL.toFixed(2),
             nome: 'Gabriel Oliveira',
@@ -54,7 +54,7 @@ routes.post('/buy-ethereum', async (req, res) => {
             identificador: payloadId
         });
 
-        const qrCode = await geradorDePix.base64();
+        const qrCode = pix.qrcode();
 
         res.json({ qrCode, totalPrice: totalPriceBRL });
     } catch (error) {
@@ -72,6 +72,7 @@ routes.get('/payload/:id', (req, res) => {
         res.status(404).send('Not Found');
     }
 });
+
 
 
 module.exports = routes;
