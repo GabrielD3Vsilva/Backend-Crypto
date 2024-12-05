@@ -22,7 +22,7 @@ routes.get('/getCryptoData', CryptoService.getCryptoData);
 
 let dataStore = {};
 
-app.post('/buy-ethereum', async (req, res) => {
+routes.post('/buy-ethereum', async (req, res) => {
     const { amount, walletAddress } = req.body;
 
     try {
@@ -49,7 +49,7 @@ app.post('/buy-ethereum', async (req, res) => {
     }
 });
 
-app.get('/payload/:id', (req, res) => {
+routes.get('/payload/:id', (req, res) => {
     const payloadId = req.params.id;
     const data = dataStore[payloadId];
     if (data) {
