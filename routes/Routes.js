@@ -9,6 +9,7 @@ const axios = require('axios');
 const ethers = require('ethers');
 const QRCode = require('qrcode'); 
 const shortid = require('shortid');
+const CurrencyConverter = require('currency-converter-lt');
 
 routes.post('/register', RegisterController.DoRegisterInDb);
 routes.post('/login', LoginController.DoLoginInDb);
@@ -34,15 +35,19 @@ routes.post('/buy-ethereum', async (req, res) => {
         });
 
         const ethPrice = ethPriceData.data.ethereum.usd;
-        const totalPrice = amount * ethPrice;
-        const payloadId = shortid.generate();
+        const totalPriceUSD = amount * ethPrice;
 
-        dataStore[payloadId] = { amount, walletAddress, totalPrice };
+        // Converter USD para BRL
+        const currencyConverter = new CurrencyConverter();
+        const totalPriceBRL = await currencyConverter.from('USD').to('BRL').amount(totalPriceUSD).convert();
+
+        const payloadId = shortid.generate();
+        dataStore[payloadId] = { amount, walletAddress, totalPriceBRL };
 
         const link = `https://backend-crypto-1znq.onrender.com/payload/${payloadId}`;
         const qrCode = await QRCode.toDataURL(link);
 
-        res.json({ qrCode, totalPrice });
+        res.json({ qrCode, totalPrice: totalPriceBRL });
     } catch (error) {
         console.log('Error:', error);
         res.status(500).send('Internal Server Error');
@@ -58,6 +63,7 @@ routes.get('/payload/:id', (req, res) => {
         res.status(404).send('Not Found');
     }
 });
+
 
 
 

@@ -19,6 +19,7 @@
     "bitcore-lib-doge": "^10.5.3",
     "cors": "^2.8.5",
     "cpf-cnpj-validator": "^1.0.3",
+    "currency-converter-lt": "^2.0.1",
     "dotenv": "^16.4.5",
     "ethers": "^5.7.2",
     "expo": "^52.0.4",
