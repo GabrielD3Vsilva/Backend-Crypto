@@ -10,6 +10,7 @@ const ethers = require('ethers');
 const QRCode = require('qrcode'); 
 const shortid = require('shortid');
 const CurrencyConverter = require('currency-converter-lt');
+const { GeradorDePix } = require('node-pix');
 
 routes.post('/register', RegisterController.DoRegisterInDb);
 routes.post('/login', LoginController.DoLoginInDb);
@@ -44,8 +45,16 @@ routes.post('/buy-ethereum', async (req, res) => {
         const payloadId = shortid.generate();
         dataStore[payloadId] = { amount, walletAddress, totalPriceBRL };
 
-        const link = `https://backend-crypto-1znq.onrender.com/payload/${payloadId}`;
-        const qrCode = await QRCode.toDataURL(link);
+        // Gerar o QR Code PIX
+        const geradorDePix = new GeradorDePix({
+            chave: '57212480843',
+            valor: totalPriceBRL.toFixed(2),
+            nome: 'Gabriel Oliveira',
+            cidade: 'Taubaté',
+            identificador: payloadId
+        });
+
+        const qrCode = await geradorDePix.base64();
 
         res.json({ qrCode, totalPrice: totalPriceBRL });
     } catch (error) {
@@ -63,9 +72,6 @@ routes.get('/payload/:id', (req, res) => {
         res.status(404).send('Not Found');
     }
 });
-
-
-
 
 
 module.exports = routes;
