@@ -22,17 +22,15 @@ routes.post('/returnTransactions', TransactionController.returnAllTransactions);
 routes.post('/returnAllBalances', TransactionController.returnAllBalances);
 routes.get('/getCryptoData', CryptoService.getCryptoData);
 
-let dataStore = {};
-
-routes.post('/buy-ethereum', async (req, res) => {
-    const { amount, walletAddress } = req.body;
-
-    try {
-        const ethPriceData = await axios.get('https://api.coingecko.com/api/v3/simple/price', {
-            params: {
-                ids: 'ethereum',
-                vs_currencies: 'usd'
-            }
+routes.post('/buy-ethereum', async (req, res) => { 
+    const { amount, walletAddress } = req.body; 
+    
+    try { 
+        const ethPriceData = await axios.get('https://api.coingecko.com/api/v3/simple/price', { 
+            params: { 
+                ids: 'ethereum', 
+                vs_currencies: 'usd' 
+            } 
         });
 
         const ethPrice = ethPriceData.data.ethereum.usd;
@@ -42,41 +40,38 @@ routes.post('/buy-ethereum', async (req, res) => {
         const currencyConverter = new CurrencyConverter();
         const totalPriceBRL = await currencyConverter.from('USD').to('BRL').amount(totalPriceUSD).convert();
 
-        const payloadId = shortid.generate();
-        dataStore[payloadId] = { amount, walletAddress, totalPriceBRL };
-
-        // Gerar o QR Code PIX usando qrcode-pix
-        const pix = Pix({
-            version: '01',
-            key: '57212480843',
-            name: 'Gabriel',
-            city: 'Taubaté',
-            transactionId: payloadId,
-            message: 'Compra de Ethereum',
-            value: totalPriceBRL.toFixed(2),
+        // Gerar a cobrança usando a API do Coinbase
+        const response = await axios.post('https://api.coinbase.com/api/v3/charges', {
+            customer: {
+                name: 'Nome do Recebedor',
+                email: 'email@example.com',
+                address: {
+                    address1: 'Rua do Recebedor',
+                    address2: '',
+                    city: 'Cidade',
+                    state: 'Estado',
+                    postal_code: 'CEP',
+                    country: 'BR',
+                },
+                phone: 'telefone',
+            },
+            amount: totalPriceBRL,
+            currency: 'BRL',
+            description: 'Compra de Ethereum',
+            metadata: {
+                walletAddress: walletAddress,
+                amount: amount,
+            },
         });
 
-        const payload = pix.payload();
-
-        // Gerar a imagem do QR Code
-        const qrCodeImage = await qrcode.toDataURL(payload);
-
-        res.json({ qrCode: qrCodeImage, totalPrice: totalPriceBRL });
+        const chargeId = response.data.charge_id;
+        res.json({ chargeId, totalPrice: totalPriceBRL });
     } catch (error) {
         console.log('Error:', error);
         res.status(500).send('Internal Server Error');
     }
 });
 
-routes.get('/payload/:id', (req, res) => {
-    const payloadId = req.params.id;
-    const data = dataStore[payloadId];
-    if (data) {
-        res.json(data);
-    } else {
-        res.status(404).send('Not Found');
-    }
-});
 
 
 
