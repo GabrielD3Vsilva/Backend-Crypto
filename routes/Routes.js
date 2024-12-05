@@ -21,17 +21,21 @@ routes.post('/returnAllBalances', TransactionController.returnAllBalances);
 routes.get('/getCryptoData', CryptoService.getCryptoData);
 
 
+const axios = require('axios');
+const QRCode = require('qrcode');
+
 routes.post('/buy-ethereum', async (req, res) => {
     const { amount, walletAddress } = req.body;
 
     try {
-        const ethPriceData = await axios.get('https://api.binance.com/api/v3/ticker/price', {
+        const ethPriceData = await axios.get('https://api.coingecko.com/api/v3/simple/price', {
             params: {
-                symbol: 'ETHUSDT'
+                ids: 'ethereum',
+                vs_currencies: 'usd'
             }
         });
 
-        const ethPrice = ethPriceData.data.price;
+        const ethPrice = ethPriceData.data.ethereum.usd;
         const totalPrice = amount * ethPrice;
 
         const pixPayload = `00020126580014BR.GOV.BCB.PIX0136${walletAddress}5204000053039865802BR5913Nome do Beneficiário6008Cidade62290525`;
@@ -44,6 +48,7 @@ routes.post('/buy-ethereum', async (req, res) => {
         res.status(500).send('Internal Server Error');
     }
 });
+
 
 
 module.exports = routes;
