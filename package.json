@@ -24,6 +24,7 @@
     "ethers": "^5.7.2",
     "expo": "^52.0.4",
     "express": "^4.21.0",
+    "gn-api-sdk-node": "^3.0.4",
     "mongoose": "^8.6.2",
     "node-pix": "^1.5.2",
     "qrcode": "^1.5.4",

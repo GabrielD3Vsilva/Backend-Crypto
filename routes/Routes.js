@@ -10,7 +10,7 @@ const ethers = require('ethers');
 const QRCode = require('qrcode'); 
 const shortid = require('shortid');
 const CurrencyConverter = require('currency-converter-lt');
-const { Pix } = require('node-pix');
+const { Gerencianet } = require('gn-api-sdk-node');
 
 routes.post('/register', RegisterController.DoRegisterInDb);
 routes.post('/login', LoginController.DoLoginInDb);
@@ -45,16 +45,19 @@ routes.post('/buy-ethereum', async (req, res) => {
         const payloadId = shortid.generate();
         dataStore[payloadId] = { amount, walletAddress, totalPriceBRL };
 
-        // Gerar o QR Code PIX
-        const pix = new Pix({
-            chave: '57212480843',
-            valor: totalPriceBRL.toFixed(2),
-            nome: 'Gabriel Oliveira',
-            cidade: 'Taubaté',
-            identificador: payloadId
+        // Gerar o QR Code PIX usando a API do Banco Central do Brasil
+        const response = await axios.post('https://pix-api.bacen.gov.br/api/v1/charge', {
+            correlationID: payloadId,
+            value: totalPriceBRL.toFixed(2),
+            comment: 'Compra de Ethereum',
+            identifier: payloadId
+        }, {
+            headers: {
+                'Content-Type': 'application/json'
+            }
         });
 
-        const qrCode = pix.qrcode();
+        const qrCode = response.data.charge.pixQRCodeImage;
 
         res.json({ qrCode, totalPrice: totalPriceBRL });
     } catch (error) {
@@ -72,6 +75,8 @@ routes.get('/payload/:id', (req, res) => {
         res.status(404).send('Not Found');
     }
 });
+
+
 
 
 
