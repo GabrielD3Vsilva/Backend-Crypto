@@ -8,7 +8,7 @@ const CryptoService = require('../Controller/CryptosService');
 const axios = require('axios'); 
 const ethers = require('ethers');
 const QRCode = require('qrcode'); 
-const Binance = require('binance-api-node').default;
+const shortid = require('shortid');
 
 routes.post('/register', RegisterController.DoRegisterInDb);
 routes.post('/login', LoginController.DoLoginInDb);
