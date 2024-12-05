@@ -20,10 +20,6 @@ routes.post('/returnTransactions', TransactionController.returnAllTransactions);
 routes.post('/returnAllBalances', TransactionController.returnAllBalances);
 routes.get('/getCryptoData', CryptoService.getCryptoData);
 
-
-const axios = require('axios');
-const QRCode = require('qrcode');
-
 routes.post('/buy-ethereum', async (req, res) => {
     const { amount, walletAddress } = req.body;
 
