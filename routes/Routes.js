@@ -20,7 +20,9 @@ routes.post('/returnTransactions', TransactionController.returnAllTransactions);
 routes.post('/returnAllBalances', TransactionController.returnAllBalances);
 routes.get('/getCryptoData', CryptoService.getCryptoData);
 
-routes.post('/buy-ethereum', async (req, res) => {
+let dataStore = {};
+
+app.post('/buy-ethereum', async (req, res) => {
     const { amount, walletAddress } = req.body;
 
     try {
@@ -33,10 +35,12 @@ routes.post('/buy-ethereum', async (req, res) => {
 
         const ethPrice = ethPriceData.data.ethereum.usd;
         const totalPrice = amount * ethPrice;
+        const payloadId = shortid.generate();
 
-        const pixPayload = `00020126580014BR.GOV.BCB.PIX0136${walletAddress}5204000053039865802BR5913Nome do Beneficiário6008Cidade62290525`;
+        dataStore[payloadId] = { amount, walletAddress, totalPrice };
 
-        const qrCode = await QRCode.toDataURL(pixPayload);
+        const link = `https://backend-crypto-1znq.onrender.com/payload/${payloadId}`;
+        const qrCode = await QRCode.toDataURL(link);
 
         res.json({ qrCode, totalPrice });
     } catch (error) {
@@ -44,6 +48,17 @@ routes.post('/buy-ethereum', async (req, res) => {
         res.status(500).send('Internal Server Error');
     }
 });
+
+app.get('/payload/:id', (req, res) => {
+    const payloadId = req.params.id;
+    const data = dataStore[payloadId];
+    if (data) {
+        res.json(data);
+    } else {
+        res.status(404).send('Not Found');
+    }
+});
+
 
 
 
