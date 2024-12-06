@@ -22,60 +22,34 @@ routes.post('/returnTransactions', TransactionController.returnAllTransactions);
 routes.post('/returnAllBalances', TransactionController.returnAllBalances);
 routes.get('/getCryptoData', CryptoService.getCryptoData);
 
-routes.post('/buy-ethereum', async (req, res) => { 
-    const { amount, walletAddress } = req.body; 
-    
-    try { 
-        const ethPriceData = await axios.get('https://api.coingecko.com/api/v3/simple/price', { 
-            params: { 
-                ids: 'ethereum', 
-                vs_currencies: 'usd' 
-            } 
-        });
-
-        const ethPrice = ethPriceData.data.ethereum.usd;
-        const totalPriceUSD = amount * ethPrice;
-
-        // Converter USD para BRL
-        const currencyConverter = new CurrencyConverter();
-        const totalPriceBRL = await currencyConverter.from('USD').to('BRL').amount(totalPriceUSD).convert();
-
-        // Gerar a cobrança usando a API do Coinbase
-        const response = await axios.post('https://api.coinbase.com/api/v3/charges', {
-            customer: {
-                name: 'Nome do Recebedor',
-                email: 'email@example.com',
-                address: {
-                    address1: 'Rua do Recebedor',
-                    address2: '',
-                    city: 'Cidade',
-                    state: 'Estado',
-                    postal_code: 'CEP',
-                    country: 'BR',
-                },
-                phone: 'telefone',
-            },
-            amount: totalPriceBRL,
-            currency: 'BRL',
-            description: 'Compra de Ethereum',
-            metadata: {
-                walletAddress: walletAddress,
-                amount: amount,
-            },
-        });
-
-        const chargeId = response.data.charge_id;
-        res.json({ chargeId, totalPrice: totalPriceBRL });
+routes.post('/api/calcular-preco', async (req, res) => {
+    const { walletAddress, ethAmount } = req.body;
+  
+    // Verificar se os parâmetros foram fornecidos
+    if (!walletAddress || !ethAmount) {
+      return res.status(400).send('Endereço da carteira e quantidade de Ethereum são necessários');
+    }
+  
+    try {
+      // Obter preço atual do Ethereum
+      const priceResponse = await axios.get('https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT');
+      const ethPrice = parseFloat(priceResponse.data.price);
+  
+      // Calcular o valor total
+      const totalValue = ethPrice * parseFloat(ethAmount);
+  
+      // Obter métodos de pagamento disponíveis
+      const paymentMethodsResponse = await axios.get('https://api.binance.com/api/v3/paymentMethods');
+      const paymentMethods = paymentMethodsResponse.data;
+  
+      // Enviar resposta
+      res.json({ totalValue, paymentMethods });
     } catch (error) {
-        console.log('Error:', error);
-        res.status(500).send('Internal Server Error');
+      console.error('Erro ao calcular o preço:', error);
+      res.status(500).send('Erro ao calcular o preço');
     }
 });
-
-
-
-
-
+  
 
 
 module.exports = routes;
