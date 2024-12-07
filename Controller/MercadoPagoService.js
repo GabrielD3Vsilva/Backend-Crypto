@@ -1,5 +1,5 @@
 const { MercadoPagoConfig, Preference } = require('mercadopago');
-const addBalanceToKuCoin = require('./AddBalanceKucoin');
+const addBalanceToKuCoin = require('./AddBalanceToKuCoin');
 
 async function createACheckoutToKucoinApi (req, res) {
     const client = new MercadoPagoConfig({ accessToken: 'TEST-8001012963880387-060323-cdb26a9b2c52877f4a0ae4bc256d8912-1840600103'});
