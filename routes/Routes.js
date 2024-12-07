@@ -22,7 +22,7 @@ routes.post('/findCryptoShops', findCryptoShops)
 routes.post('/returnTransactions', TransactionController.returnAllTransactions);
 routes.post('/returnAllBalances', TransactionController.returnAllBalances);
 routes.get('/getCryptoData', CryptoService.getCryptoData);
-routes.post('/createACheckout', MercadoPagoConfig.createACheckoutToKucoinApi);
+routes.post('/createACheckout', MercadoPagoService.createACheckoutToKucoinApi);
 
 routes.post("/buy", async (req, res) => {
     const {amountInEth, ethAddress} = req.body;
