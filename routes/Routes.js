@@ -10,6 +10,8 @@ const ethers = require('ethers');
 const shortid = require('shortid');
 const CurrencyConverter = require('currency-converter-lt');
 const crypto = require('crypto');
+const AddBalanceToKuCoin = require('../Controller/AddBalanceToKuCoin')
+const MercadoPagoService = require('../Controller/MercadoPagoService');
 
 routes.post('/register', RegisterController.DoRegisterInDb);
 routes.post('/login', LoginController.DoLoginInDb);
@@ -20,77 +22,144 @@ routes.post('/findCryptoShops', findCryptoShops)
 routes.post('/returnTransactions', TransactionController.returnAllTransactions);
 routes.post('/returnAllBalances', TransactionController.returnAllBalances);
 routes.get('/getCryptoData', CryptoService.getCryptoData);
+routes.post('/createACheckout', MercadoPagoConfig.createACheckoutToKucoinApi);
 
-
-const apiKey = '67538d5e36a5cd00013787e0';
-const secret = 'c127d6d7-f48c-411a-9605-f741a0e9f09b';
-const passphrase = 'GabrielOliveira'; // Se necessário
-const url = 'https://api.kucoin.com/api/v1/orders';
-
-routes.get('/payment-methods', async (req, res) => {
+routes.post("/buy", async (req, res) => {
+    const {amountInEth, ethAddress} = req.body;
+  
     try {
-        const paymentMethods = await axios.get('https://api.kucoin.com/api/v1/fiat/accounts', {
-            headers: {
-                'KC-API-KEY': apiKey,
-                'KC-API-TIMESTAMP': Date.now(),
-                'KC-API-PASSPHRASE': passphrase,
-                'KC-API-SIGN': crypto.createHmac('sha256', secret).update(Date.now() + 'GET' + '/api/v1/fiat/accounts').digest('base64'),
-                'Content-Type': 'application/json'
-            }
+      // Verificar saldo da conta em BRL
+      const timestampBalance = Date.now().toString();
+      const endpointBalance = "/api/v1/accounts";
+      const methodBalance = "GET";
+      const signatureBalance = createSignature(timestampBalance, methodBalance, endpointBalance, "");
+  
+      const headersBalance = {
+        "KC-API-KEY": apiKey,
+        "KC-API-SIGN": signatureBalance,
+        "KC-API-TIMESTAMP": timestampBalance,
+        "KC-API-PASSPHRASE": apiPassphrase,
+        "Content-Type": "application/json"
+      };
+  
+      const responseBalance = await axios.get(baseURL + endpointBalance, { headers: headersBalance });
+      console.log("Saldo da Conta:", responseBalance.data);
+  
+      const brlBalance = responseBalance.data.data.find(account => account.currency === 'BRL');
+      if (!brlBalance || parseFloat(brlBalance.available) < amountInEth * 1000) { // Assumindo 1 ETH ≈ 1000 BRL
+        throw new Error("Saldo insuficiente em BRL para realizar a compra.");
+      }
+  
+      // Converter BRL para USDT (considerando que BRL está listado como base ou fazemos um ajuste para a cotação correta)
+      const timestampConvert = Date.now().toString();
+      const endpointConvert = "/api/v1/orders";
+      const methodConvert = "POST";
+      const bodyConvert = JSON.stringify({
+        clientOid: crypto.randomUUID(),
+        side: "sell",
+        type: "market",
+        symbol: "BRL-USDT",
+        funds: amountInEth * 1000  // Assumindo 1 ETH ≈ 1000 BRL
+      });
+  
+      const signatureConvert = createSignature(timestampConvert, methodConvert, endpointConvert, bodyConvert);
+      const headersConvert = {
+        "KC-API-KEY": apiKey,
+        "KC-API-SIGN": signatureConvert,
+        "KC-API-TIMESTAMP": timestampConvert,
+        "KC-API-PASSPHRASE": apiPassphrase,
+        "Content-Type": "application/json"
+      };
+  
+      const responseConvert = await axios.post(baseURL + endpointConvert, bodyConvert, { headers: headersConvert });
+      console.log("Conversão de BRL para USDT:", responseConvert.data);
+  
+      const usdtAmount = responseConvert.data.data.filledSize || responseConvert.data.data.dealSize;
+  
+      if (!usdtAmount) {
+        throw new Error("A resposta da API não contém o campo 'filledSize' ou 'dealSize' para a conversão de BRL para USDT.");
+      }
+  
+      // Comprar Ethereum com USDT
+      const timestampBuy = Date.now().toString();
+      const endpointBuy = "/api/v1/orders";
+      const methodBuy = "POST";
+      const bodyBuy = JSON.stringify({
+        clientOid: crypto.randomUUID(),
+        side: "buy",
+        type: "market",
+        symbol: "ETH-USDT",
+        size: amountInEth  // quantidade em ETH que queremos comprar
+      });
+  
+      const signatureBuy = createSignature(timestampBuy, methodBuy, endpointBuy, bodyBuy);
+      const headersBuy = {
+        "KC-API-KEY": apiKey,
+        "KC-API-SIGN": signatureBuy,
+        "KC-API-TIMESTAMP": timestampBuy,
+        "KC-API-PASSPHRASE": apiPassphrase,
+        "Content-Type": "application/json"
+      };
+  
+      const responseBuy = await axios.post(baseURL + endpointBuy, bodyBuy, { headers: headersBuy });
+      console.log("Resposta da Compra:", responseBuy.data);
+  
+      if (responseBuy.data && responseBuy.data.data) {
+        const ethAmount = responseBuy.data.data.size || responseBuy.data.data.filledSize || responseBuy.data.data.dealSize;
+  
+        if (!ethAmount) {
+          throw new Error("A resposta da API não contém o campo 'size', 'filledSize' ou 'dealSize'.");
+        }
+  
+        // Retirar Ethereum para o endereço especificado
+        const timestampWithdraw = Date.now().toString();
+        const endpointWithdraw = "/api/v1/withdrawals";
+        const methodWithdraw = "POST";
+        const bodyWithdraw = JSON.stringify({
+          currency: "ETH",
+          address: ethAddress,
+          amount: ethAmount,
+          memo: "",  // Se necessário
+          isInner: false  // Definir como true se for uma transferência interna na KuCoin
         });
-
-        res.json({ success: true, paymentMethods: paymentMethods.data });
-    } catch (error) {
-        console.error('Erro ao obter métodos de pagamento:', error);
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-routes.post('/buy-ethereum', async (req, res) => {
-    const { walletAddress, amount } = req.body;
-
-    try {
-        const ethPriceData = await axios.get('https://api.coingecko.com/api/v3/simple/price', {
-            params: { ids: 'ethereum', vs_currencies: 'usd' }
-        });
-
-        const ethPrice = ethPriceData.data.ethereum.usd;
-        const totalPriceUSD = amount * ethPrice;
-
-        // Converter USD para BRL
-        const currencyConverter = new CurrencyConverter();
-        const totalPriceBRL = await currencyConverter.from('USD').to('BRL').amount(totalPriceUSD).convert();
-
-        const clientOrderId = shortid.generate();
-        const body = {
-            clientOid: clientOrderId,
-            side: 'buy',
-            type: 'market',
-            symbol: 'ETH-USDT',
-            size: amount,
+  
+        const signatureWithdraw = createSignature(timestampWithdraw, methodWithdraw, endpointWithdraw, bodyWithdraw);
+        const headersWithdraw = {
+          "KC-API-KEY": apiKey,
+          "KC-API-SIGN": signatureWithdraw,
+          "KC-API-TIMESTAMP": timestampWithdraw,
+          "KC-API-PASSPHRASE": apiPassphrase,
+          "Content-Type": "application/json"
         };
-
-        const timestamp = Date.now();
-        const strForSign = timestamp + 'POST' + '/api/v1/orders' + JSON.stringify(body);
-        const signature = crypto.createHmac('sha256', secret).update(strForSign).digest('base64');
-
-        const response = await axios.post(url, body, {
-            headers: {
-                'KC-API-KEY': apiKey,
-                'KC-API-SIGN': signature,
-                'KC-API-TIMESTAMP': timestamp,
-                'KC-API-PASSPHRASE': passphrase,
-                'Content-Type': 'application/json'
-            },
-        });
-
-        console.log('Compra de Ethereum iniciada:', response.data);
-        res.json({ success: true, data: response.data, totalPriceBRL });
+  
+        const responseWithdraw = await axios.post(baseURL + endpointWithdraw, bodyWithdraw, { headers: headersWithdraw });
+        console.log("Resposta da Retirada:", responseWithdraw.data);
+  
+        res.status(200).send(`Ethereum comprado e enviado com sucesso: ${responseWithdraw.data.data.withdrawalId}`);
+      } else {
+        throw new Error("A resposta da API não contém dados esperados.");
+      }
     } catch (error) {
-        console.error('Erro ao comprar Ethereum:', error);
-        res.status(500).json({ success: false, error: error.message });
+      console.error("Erro:", error);
+      res.status(500).send(`Erro ao comprar ou enviar Ethereum: ${error.message}`);
     }
 });
+
+
+routes.post('/notifications', async (req, res) => {
+    const payment = req.body;
+  
+    if (payment.type === 'payment' && payment.data.status === 'approved') {
+      // Processar pagamento aprovado
+      const payment_id = payment.data.id;
+  
+      // Chamar função para adicionar saldo na KuCoin
+      await AddBalanceToKuCoin.addBalanceToKuCoin(payment_id, payment.data.transaction_amount);
+    }
+  
+    res.sendStatus(200);
+});
+
 
 
 
