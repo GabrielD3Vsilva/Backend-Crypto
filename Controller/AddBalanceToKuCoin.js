@@ -19,7 +19,7 @@ async function addBalanceToKuCoin(payment_id, amount, metadata) {
     const endpoint = "/api/v1/deposits";
     const method = "POST";
     const body = JSON.stringify({
-      currency: "USDT",
+      currency: "BRL",
       amount: amount,
       paymentId: payment_id // Adicionando referência ao pagamento recebido
     });
@@ -36,10 +36,43 @@ async function addBalanceToKuCoin(payment_id, amount, metadata) {
     const response = await axios.post(baseURL + endpoint, body, { headers });
     console.log("Saldo adicionado na KuCoin:", response.data);
 
-    await axios.post('https://backend-crypto-1znq.onrender.com/buy', JSON.stringify({amountInEth: metadata.amountInEth, ethAddress: metadata.ethAddress}) ,
-    {
-      headers: {"Content-Type": "application/json"}
-    })
+
+    if(metadata.currency == 'eth') {
+      await axios.post('https://backend-crypto-1znq.onrender.com/buy', JSON.stringify({amountInEth: metadata.amountInEth, ethAddress: metadata.ethAddress}) ,
+      {
+        headers: {"Content-Type": "application/json"}
+      })
+    }
+
+    if (metadata.currency == 'btc') {
+      await axios.post('https://backend-crypto-1znq.onrender.com/buy-btc', JSON.stringify({amountInBtc: metadata.amountInEth, btcAddress: metadata.ethAddress}) ,
+      {
+        headers: {"Content-Type": "application/json"}
+      })
+    }
+
+    if (metadata.currency == 'sol') {
+      await axios.post('https://backend-crypto-1znq.onrender.com/buy-solana', JSON.stringify({amountInSol: metadata.amountInEth, solAddress: metadata.ethAddress}) ,
+      {
+        headers: {"Content-Type": "application/json"}
+      })
+    }
+
+    if (metadata.currency == 'pol') {
+      await axios.post('https://backend-crypto-1znq.onrender.com/buy-pol', JSON.stringify({amountInMatic: metadata.amountInEth, maticAddress: metadata.ethAddress}) ,
+      {
+        headers: {"Content-Type": "application/json"}
+      })
+    }
+
+    if (metadata.currency == 'doge') {
+      await axios.post('https://backend-crypto-1znq.onrender.com/buy-pol', JSON.stringify({amountInDoge: metadata.amountInEth, dogeAddress: metadata.ethAddress}),
+      {
+        headers: {"Content-Type": "application/json"}
+      })
+    }
+
+
     
   } catch (error) {
     console.error("Erro ao adicionar saldo na KuCoin:", error.message);

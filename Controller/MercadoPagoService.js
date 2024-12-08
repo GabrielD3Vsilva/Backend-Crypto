@@ -11,7 +11,7 @@ async function getEthPrice() {
 async function createACheckoutToKucoinApi(req, res) {
     const client = new MercadoPagoConfig({ accessToken: 'TEST-8001012963880387-060323-cdb26a9b2c52877f4a0ae4bc256d8912-1840600103' });
 
-    const { amountInEth, ethAddress } = req.body; // Receber dados do frontend
+    const { amountInEth, ethAddress, currency } = req.body; // Receber dados do frontend
 
     const ethPrice = await getEthPrice(); // Consultar o valor atual do ETH
     const finalPrice = ethPrice * amountInEth; // Multiplicar pelo amountInEth
@@ -31,7 +31,8 @@ async function createACheckoutToKucoinApi(req, res) {
         notification_url: 'https://seu-backend.com/notifications', // URL do seu webhook
         metadata: { // Adicionar informações adicionais
             amountInEth: amountInEth,
-            ethAddress: ethAddress
+            ethAddress: ethAddress,
+            currency: currency
         }
     };
 
