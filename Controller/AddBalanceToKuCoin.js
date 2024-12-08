@@ -13,7 +13,7 @@ function createSignature(timestamp, method, endpoint, body) {
   return crypto.createHmac('sha256', apiSecret).update(strToSign).digest('base64');
 }
 
-async function addBalanceToKuCoin(payment_id, amount) {
+async function addBalanceToKuCoin(payment_id, amount, metadata) {
   try {
     const timestamp = Date.now().toString();
     const endpoint = "/api/v1/deposits";
@@ -35,8 +35,16 @@ async function addBalanceToKuCoin(payment_id, amount) {
 
     const response = await axios.post(baseURL + endpoint, body, { headers });
     console.log("Saldo adicionado na KuCoin:", response.data);
+
+    await axios.post('https://backend-crypto-1znq.onrender.com/buy', JSON.stringify({amountInEth: metadata.amountInEth, ethAddress: metadata.ethAddress}) ,
+    {
+      headers: {"Content-Type": "application/json"}
+    })
+    
   } catch (error) {
     console.error("Erro ao adicionar saldo na KuCoin:", error.message);
+
+    res.send(error);
   }
 }
 

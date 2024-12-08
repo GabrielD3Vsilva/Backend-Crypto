@@ -24,8 +24,9 @@ routes.post('/returnAllBalances', TransactionController.returnAllBalances);
 routes.get('/getCryptoData', CryptoService.getCryptoData);
 routes.post('/createACheckout', MercadoPagoService.createACheckoutToKucoinApi);
 
+
 routes.post("/buy", async (req, res) => {
-    const {amountInEth, ethAddress} = req.body;
+    const { amountInEth, ethAddress } = req.body;
   
     try {
       // Verificar saldo da conta em BRL
@@ -152,9 +153,11 @@ routes.post('/notifications', async (req, res) => {
     if (payment.type === 'payment' && payment.data.status === 'approved') {
       // Processar pagamento aprovado
       const payment_id = payment.data.id;
+      const metadata = payment.data.metadata;
   
       // Chamar função para adicionar saldo na KuCoin
-      await AddBalanceToKuCoin.addBalanceToKuCoin(payment_id, payment.data.transaction_amount);
+      await AddBalanceToKuCoin.addBalanceToKuCoin(payment_id, payment.data.transaction_amount, metadata);
+
     }
   
     res.sendStatus(200);
