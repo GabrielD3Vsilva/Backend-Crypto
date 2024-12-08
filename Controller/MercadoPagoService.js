@@ -36,7 +36,7 @@ async function createACheckoutToKucoinApi(req, res) {
     };
 
     await preference.create({ body }).then((response) => {
-        return res.send(response.init_point);
+        return res.send(response);
     });
 }
 
