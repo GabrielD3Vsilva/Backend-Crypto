@@ -12,6 +12,7 @@ const CurrencyConverter = require('currency-converter-lt');
 const crypto = require('crypto');
 const AddBalanceToKuCoin = require('../Controller/AddBalanceToKuCoin')
 const MercadoPagoService = require('../Controller/MercadoPagoService');
+const Db = require('../db/Db');
 
 routes.post('/register', RegisterController.DoRegisterInDb);
 routes.post('/login', LoginController.DoLoginInDb);
@@ -24,6 +25,41 @@ routes.post('/returnAllBalances', TransactionController.returnAllBalances);
 routes.get('/getCryptoData', CryptoService.getCryptoData);
 routes.post('/createACheckout', MercadoPagoService.createACheckoutToKucoinApi);
 
+
+routes.post('/addImage', async ( req, res ) => {
+    const {image, _id} = req.body;
+    try {
+        const user = await Db.User.findOneAndUpdate(
+            { _id: _id },
+            { image: image },
+            { new: true}
+        );
+
+
+        console.log(user);
+
+        res.send('ok');
+        
+    } catch (err) {
+        console.log(err);
+    }
+    
+})
+
+
+routes.post('/changeLanguage', async (req, res) => {
+    const { _id , language} = req.body;
+    
+    const user = await Db.User.findOneAndUpdate(
+        { _id: _id },
+        { language: language },
+        { new: true }
+    )
+
+
+    return res.send(user);
+
+})
 
 routes.post("/buy", async (req, res) => {
     const { amountInEth, ethAddress } = req.body;

@@ -23,12 +23,14 @@ const UserSchema = new mongoose.Schema({
     pKEth: String,
     walletBitcoin: String,
     pKBitcoin: String,
+    language: String,
     PaymentsArray: [{
         wallet: String,
         toWallet: String,
         currency: String,
         amount: Number
-    }]
+    }], 
+    image: String
 
 });
 

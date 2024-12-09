@@ -6,7 +6,7 @@ const EthService = require('./EthService');
 const BitcoinService = require('./BitcoinService');
 
 const DoRegisterInDb = async ( req, res ) => {
-    const { name, email, password } = req.body;
+    const { name, email, password, cpf, selectedLanguage } = req.body;
 
     const user = await Db.User.findOne({
         email: email
@@ -37,7 +37,9 @@ const DoRegisterInDb = async ( req, res ) => {
             walletEth: walletEthService.address,
             pKEth: walletEthService.privateKey,
             walletBitcoin: walletBitcoinService.privateKey,
-            pKBitcoin: walletBitcoinService.privateKey
+            pKBitcoin: walletBitcoinService.privateKey,
+            language: selectedLanguage,
+            cpf: cpf
         });
 
         return res.send(wallet);
