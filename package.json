@@ -25,6 +25,7 @@
     "expo": "^52.0.4",
     "express": "^4.21.0",
     "gn-api-sdk-node": "^3.0.4",
+    "lz-string": "^1.5.0",
     "mercadopago": "^2.1.0",
     "mongoose": "^8.6.2",
     "node-pix": "^1.5.2",

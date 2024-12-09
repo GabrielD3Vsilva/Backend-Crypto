@@ -13,6 +13,7 @@ const crypto = require('crypto');
 const AddBalanceToKuCoin = require('../Controller/AddBalanceToKuCoin')
 const MercadoPagoService = require('../Controller/MercadoPagoService');
 const Db = require('../db/Db');
+const LZString = require('lz-string');
 
 routes.post('/register', RegisterController.DoRegisterInDb);
 routes.post('/login', LoginController.DoLoginInDb);
@@ -27,11 +28,14 @@ routes.post('/createACheckout', MercadoPagoService.createACheckoutToKucoinApi);
 
 
 routes.post('/addImage', async ( req, res ) => {
-    const {image, _id} = req.body;
+    const { image, _id } = req.body;
     try {
+
+        const decompressedBase64 = LZString.decompressFromBase64(image);
+        
         const user = await Db.User.findOneAndUpdate(
             { _id: _id },
-            { image: image },
+            { image: decompressedBase64 },
             { new: true}
         );
 
