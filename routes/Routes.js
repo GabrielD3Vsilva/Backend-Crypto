@@ -27,6 +27,27 @@ routes.get('/getCryptoData', CryptoService.getCryptoData);
 routes.post('/createACheckout', MercadoPagoService.createACheckoutToKucoinApi);
 
 
+routes.post('/changeAuth', async (req, res) => {
+    const { name, email, password, cpf, _id } = req.body;
+
+    const user = await Db.User.findOneAndUpdate(
+        { _id: _id },
+        { 
+            name: name,
+            email: email,
+            cpf: cpf,
+            password: password
+        },
+        { 
+            new: true, // Retorna o documento atualizado// 
+        }
+    );
+    
+
+    res.send(user);
+
+})
+
 routes.post('/addImage', async ( req, res ) => {
     const { image, _id } = req.body;
     try {
